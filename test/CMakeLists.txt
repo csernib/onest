@@ -1,27 +1,25 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-project(onest)
+project(onest_test)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(
 	SOURCES
-	src/main.cpp
-	src/File.cpp
-	src/csv/Parser.cpp
+	main.cpp
+	Test_Parser.cpp
 )
 
 set(
 	HEADERS
-	src/File.h
-	src/csv/Parser.h
+	test.h
 )
 
 add_executable(
-	onest
+	onest_test
 	${SOURCES}
 	${HEADERS}
 )
 
-add_subdirectory(test)
+target_include_directories(onest_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../ext/lest/include)
