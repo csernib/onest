@@ -16,6 +16,7 @@ set(
 	HEADERS
 	src/File.h
 	src/csv/Parser.h
+	src/csv/ParserException.h
 )
 
 add_executable(

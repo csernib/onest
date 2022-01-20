@@ -1,7 +1,5 @@
 #include "Parser.h"
-
-#include <regex>
-#include <algorithm>
+#include "ParserException.h"
 
 
 using namespace std;
@@ -10,19 +8,72 @@ namespace onest::csv
 {
 	Parser::Parser(const std::string& csvData, char separator, char quoteChar)
 	{
-		static const regex csvRegex(R"__((?:^|,)(?:"((?:[^"]|"")*)"|([^,]*?))(?=,|$))__", regex_constants::optimize);
-		static const regex quoteRegex("\"\"");
-
+		Value value;
 		Row row;
-		for (auto it = sregex_iterator(csvData.begin(), csvData.end(), csvRegex); it != sregex_iterator(); ++it)
+		enum { NO, INPROG, MATCHED } quoting = NO;
+		unsigned long lineNumber = 1;
+
+		auto moveInto = []<class Into, class From>(Into& into, From& from)
 		{
-			// TODO: Just go and parse it! (need to detect number of columns somehow, maybe put a group around $ in the regex - we don't care if new line is part of a quote!)
-			const smatch& match = *it;
-			string sm1 = regex_replace(match[1].str(), quoteRegex, "\"");
-			string sm2 = match[2];
-			row.push_back(sm1 + sm2);
+			From toBeAdded;
+			swap(from, toBeAdded);
+			into.push_back(move(toBeAdded));
+		};
+
+		for (char c : csvData)
+		{
+			if (quoting == MATCHED && c != quoteChar)
+			{
+				quoting = NO;
+			}
+
+			if (c == '\n' && quoting == NO)
+			{
+				moveInto(row, value);
+
+				if (row.size() > 1 || !row[0].empty())
+					moveInto(mySheet, row);
+				else
+					row.clear();
+
+				++lineNumber;
+			}
+			else if (c == quoteChar)
+			{
+				switch (quoting)
+				{
+				case NO:
+					if (!value.empty())
+						throw ParserException("line " + to_string(lineNumber) + ": quote in unquoted string");
+					quoting = INPROG;
+					break;
+
+				case INPROG:
+					quoting = MATCHED;
+					break;
+
+				case MATCHED:
+					value.push_back(c);
+					quoting = INPROG;
+					break;
+				}
+			}
+			else if (c == separator && quoting == NO)
+			{
+				moveInto(row, value);
+			}
+			else
+			{
+				// TODO: Text after closing quote should also be disallowed. (see failing test!)
+				value.push_back(c);
+			}
 		}
 
-		mySheet.push_back(move(row));
+		if (quoting == INPROG)
+			throw ParserException("end of input reached without closing quote");
+
+		row.push_back(move(value));
+		if (row.size() > 1 || !row[0].empty())
+			mySheet.push_back(move(row));
 	}
 }
