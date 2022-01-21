@@ -22,7 +22,7 @@ CASE(TAG "Parsing empty string returns empty sheet.")
 	EXPECT(parsed.empty());
 }
 
-CASE(TAG "Parsing a single newline returns empty sheet.")
+CASE(TAG "Parsing a single newline returns a sheet with a single empty row.")
 {
 	// Given
 	string csv = "\n";
@@ -31,7 +31,9 @@ CASE(TAG "Parsing a single newline returns empty sheet.")
 	auto parsed = Parser(csv, ',', '"').getSheet();
 
 	// Then
-	EXPECT(parsed.empty());
+	EXPECT(parsed.size() == 1);
+	EXPECT(parsed[0].size() == 1);
+	EXPECT(parsed[0][0] == "");
 }
 
 CASE(TAG "Parsing single unquoted line without ending newline works.")
@@ -66,7 +68,7 @@ CASE(TAG "Parsing single unquoted line with ending newline works.")
 	EXPECT(parsed[0][2] == "def");
 }
 
-CASE(TAG "Parsing two unquoted lines with empty line between them works.")
+CASE(TAG "Parsing two unquoted lines works.")
 {
 	// Given
 	string csv = "a,bc,def\ngh,ij";
@@ -87,7 +89,7 @@ CASE(TAG "Parsing two unquoted lines with empty line between them works.")
 	EXPECT(parsed[1][1] == "ij");
 }
 
-CASE(TAG "Parsing new line in unquoted string is ignored.")
+CASE(TAG "Parsing new line in unquoted string is considered an empty row.")
 {
 	// Given
 	string csv = "a,b\n\ncd";
@@ -96,17 +98,20 @@ CASE(TAG "Parsing new line in unquoted string is ignored.")
 	auto parsed = Parser(csv, ',', '"').getSheet();
 
 	// Then
-	EXPECT(parsed.size() == 2);
+	EXPECT(parsed.size() == 3);
 
 	EXPECT(parsed[0].size() == 2);
 	EXPECT(parsed[0][0] == "a");
 	EXPECT(parsed[0][1] == "b");
 
 	EXPECT(parsed[1].size() == 1);
-	EXPECT(parsed[1][0] == "cd");
+	EXPECT(parsed[1][0] == "");
+
+	EXPECT(parsed[2].size() == 1);
+	EXPECT(parsed[2][0] == "cd");
 }
 
-CASE(TAG "Separators next to each other cause empty string to be added.")
+CASE(TAG "Separators next to each other cause empty strings to be added.")
 {
 	// Given
 	string csv = "ab,,,cd";
@@ -223,6 +228,15 @@ CASE(TAG "Using two quotes within a quote results in a single quote in the outpu
 	EXPECT(parsed[0].size() == 2);
 	EXPECT(parsed[0][0] == "a");
 	EXPECT(parsed[0][1] == "\"b,\"\"");
+}
+
+CASE(TAG "Having just one quote in the input causes ParserException.")
+{
+	// Given
+	string csv = "\"";
+
+	// When, then
+	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Ending the input with opening quote causes ParserException.")

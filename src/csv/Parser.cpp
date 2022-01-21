@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include "ParserException.h"
 
+#include <regex>
+
 
 using namespace std;
 
@@ -8,72 +10,34 @@ namespace onest::csv
 {
 	Parser::Parser(const std::string& csvData, char separator, char quoteChar)
 	{
-		Value value;
+		static const regex csvRegex(R"__((?:"((?:[^"]|"")*)"|([^,"]*?))(?:(,)?(\r\n|\n|\r|$)|,))__", regex_constants::optimize);
+		static const regex quoteRegex("\"\"", regex_constants::optimize);
+
 		Row row;
-		enum { NO, INPROG, MATCHED } quoting = NO;
-		unsigned long lineNumber = 1;
-
-		auto moveInto = []<class Into, class From>(Into& into, From& from)
+		bool matched = false;
+		for (auto it = sregex_iterator(csvData.begin(), csvData.end(), csvRegex, regex_constants::match_not_null); it != sregex_iterator(); ++it)
 		{
-			From toBeAdded;
-			swap(from, toBeAdded);
-			into.push_back(move(toBeAdded));
-		};
+			const smatch& match = *it;
 
-		for (char c : csvData)
-		{
-			if (quoting == MATCHED && c != quoteChar)
+			if (match.prefix().matched)
+				throw ParserException("Invalid CSV");
+
+			string sm1 = regex_replace(match[1].str(), quoteRegex, "\"");
+			string sm2 = match[2];
+			row.push_back(move(sm1) + move(sm2));
+
+			if (match[3].matched)
+				row.push_back("");
+
+			if (match[4].matched)
 			{
-				quoting = NO;
-			}
-
-			if (c == '\n' && quoting == NO)
-			{
-				moveInto(row, value);
-
-				if (row.size() > 1 || !row[0].empty())
-					moveInto(mySheet, row);
-				else
-					row.clear();
-
-				++lineNumber;
-			}
-			else if (c == quoteChar)
-			{
-				switch (quoting)
-				{
-				case NO:
-					if (!value.empty())
-						throw ParserException("line " + to_string(lineNumber) + ": quote in unquoted string");
-					quoting = INPROG;
-					break;
-
-				case INPROG:
-					quoting = MATCHED;
-					break;
-
-				case MATCHED:
-					value.push_back(c);
-					quoting = INPROG;
-					break;
-				}
-			}
-			else if (c == separator && quoting == NO)
-			{
-				moveInto(row, value);
-			}
-			else
-			{
-				// TODO: Text after closing quote should also be disallowed. (see failing test!)
-				value.push_back(c);
+				mySheet.push_back(row);
+				row.clear();
+				matched = !match.suffix().matched;
 			}
 		}
 
-		if (quoting == INPROG)
-			throw ParserException("end of input reached without closing quote");
-
-		row.push_back(move(value));
-		if (row.size() > 1 || !row[0].empty())
-			mySheet.push_back(move(row));
+		if (!matched && !csvData.empty())
+			throw ParserException("Invalid CSV");
 	}
 }
