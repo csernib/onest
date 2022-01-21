@@ -230,6 +230,48 @@ CASE(TAG "Using two quotes within a quote results in a single quote in the outpu
 	EXPECT(parsed[0][1] == "\"b,\"\"");
 }
 
+CASE(TAG "Parsing also supports CRLF line-ending.")
+{
+	// Given
+	string csv = "a,\r\nb,c,\"d\r\nef\"";
+
+	// When
+	auto parsed = parseSheet(csv, ',', '"');
+
+	// Then
+	EXPECT(parsed.size() == 2);
+
+	EXPECT(parsed[0].size() == 2);
+	EXPECT(parsed[0][0] == "a");
+	EXPECT(parsed[0][1] == "");
+
+	EXPECT(parsed[1].size() == 3);
+	EXPECT(parsed[1][0] == "b");
+	EXPECT(parsed[1][1] == "c");
+	EXPECT(parsed[1][2] == "d\r\nef");
+}
+
+CASE(TAG "Parsing also supports CR line-ending.")
+{
+	// Given
+	string csv = "a,\rb,c,\"d\ref\"";
+
+	// When
+	auto parsed = parseSheet(csv, ',', '"');
+
+	// Then
+	EXPECT(parsed.size() == 2);
+
+	EXPECT(parsed[0].size() == 2);
+	EXPECT(parsed[0][0] == "a");
+	EXPECT(parsed[0][1] == "");
+
+	EXPECT(parsed[1].size() == 3);
+	EXPECT(parsed[1][0] == "b");
+	EXPECT(parsed[1][1] == "c");
+	EXPECT(parsed[1][2] == "d\ref");
+}
+
 CASE(TAG "Having just one quote in the input causes ParserException.")
 {
 	// Given
