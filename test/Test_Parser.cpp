@@ -7,7 +7,7 @@
 #define TAG "[Parser] "
 
 using namespace std;
-using onest::csv::Parser;
+using onest::csv::parseSheet;
 using onest::csv::ParserException;
 
 CASE(TAG "Parsing empty string returns empty sheet.")
@@ -16,7 +16,7 @@ CASE(TAG "Parsing empty string returns empty sheet.")
 	string csv = "";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.empty());
@@ -28,7 +28,7 @@ CASE(TAG "Parsing a single newline returns a sheet with a single empty row.")
 	string csv = "\n";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -42,7 +42,7 @@ CASE(TAG "Parsing single unquoted line without ending newline works.")
 	string csv = "a,bc,def";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -58,7 +58,7 @@ CASE(TAG "Parsing single unquoted line with ending newline works.")
 	string csv = "a,bc,def\n";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -74,7 +74,7 @@ CASE(TAG "Parsing two unquoted lines works.")
 	string csv = "a,bc,def\ngh,ij";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 2);
@@ -95,7 +95,7 @@ CASE(TAG "Parsing new line in unquoted string is considered an empty row.")
 	string csv = "a,b\n\ncd";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 3);
@@ -117,7 +117,7 @@ CASE(TAG "Separators next to each other cause empty strings to be added.")
 	string csv = "ab,,,cd";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -135,7 +135,7 @@ CASE(TAG "Lines ending with a separator cause an empty string to be added.")
 	string csv = "a,b,\ncd";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 2);
@@ -155,7 +155,7 @@ CASE(TAG "Input ending with a separator causes an empty string to be added.")
 	string csv = "a,b,";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -172,7 +172,7 @@ CASE(TAG "Empty quote is parsed as empty string.")
 	string csv = "a,\"\"";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -188,7 +188,7 @@ CASE(TAG "Quotes allow for separators within the quote.")
 	string csv = "a,\"bc,d,e\"";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -204,7 +204,7 @@ CASE(TAG "Line-breaks are preserved within quotes.")
 	string csv = "a,\"bc\nd\"";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -220,7 +220,7 @@ CASE(TAG "Using two quotes within a quote results in a single quote in the outpu
 	string csv = "a,\"\"\"b,\"\"\"\"\"";
 
 	// When
-	auto parsed = Parser(csv, ',', '"').getSheet();
+	auto parsed = parseSheet(csv, ',', '"');
 
 	// Then
 	EXPECT(parsed.size() == 1);
@@ -236,7 +236,7 @@ CASE(TAG "Having just one quote in the input causes ParserException.")
 	string csv = "\"";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Ending the input with opening quote causes ParserException.")
@@ -245,7 +245,7 @@ CASE(TAG "Ending the input with opening quote causes ParserException.")
 	string csv = "a,\"";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Ending the input without a closing quote causes a ParserException.")
@@ -254,7 +254,7 @@ CASE(TAG "Ending the input without a closing quote causes a ParserException.")
 	string csv = "\"ab";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Ending the input without a closing quote on a quoted quote causes a ParserException.")
@@ -263,7 +263,7 @@ CASE(TAG "Ending the input without a closing quote on a quoted quote causes a Pa
 	string csv = "\"ab\"\"";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Mixing unquoted text before quoted value is disallowed.")
@@ -272,7 +272,7 @@ CASE(TAG "Mixing unquoted text before quoted value is disallowed.")
 	string csv = "a\"bc\"";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
 CASE(TAG "Mixing unquoted text after quoted value is disallowed.")
@@ -281,5 +281,5 @@ CASE(TAG "Mixing unquoted text after quoted value is disallowed.")
 	string csv = "\"ab\"c";
 
 	// When, then
-	EXPECT_THROWS_AS(Parser(csv, ',', '"'), ParserException);
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }

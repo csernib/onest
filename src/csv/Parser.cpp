@@ -8,12 +8,13 @@ using namespace std;
 
 namespace onest::csv
 {
-	Parser::Parser(const std::string& csvData, char separator, char quoteChar)
+	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar)
 	{
 		static const regex csvRegex(R"__((?:"((?:[^"]|"")*)"|([^,"]*?))(?:(,)?(\r\n|\n|\r|$)|,))__", regex_constants::optimize);
 		static const regex quoteRegex("\"\"", regex_constants::optimize);
 
 		Row row;
+		Sheet sheet;
 		bool matched = false;
 		for (auto it = sregex_iterator(csvData.begin(), csvData.end(), csvRegex, regex_constants::match_not_null); it != sregex_iterator(); ++it)
 		{
@@ -31,7 +32,7 @@ namespace onest::csv
 
 			if (match[4].matched)
 			{
-				mySheet.push_back(row);
+				sheet.push_back(row);
 				row.clear();
 				matched = !match.suffix().matched;
 			}
@@ -39,5 +40,7 @@ namespace onest::csv
 
 		if (!matched && !csvData.empty())
 			throw ParserException("Invalid CSV");
+
+		return sheet;
 	}
 }
