@@ -8,15 +8,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
 	SOURCES
 	src/main.cpp
-	src/File.cpp
 	src/csv/Parser.cpp
+	src/io/File.cpp
 )
 
 set(
 	HEADERS
-	src/File.h
 	src/csv/Parser.h
 	src/csv/ParserException.h
+	src/io/File.h
 )
 
 add_executable(

@@ -8,7 +8,7 @@
 using namespace std;
 namespace fs = filesystem;
 
-namespace onest
+namespace onest::io
 {
 	string File::readFileAsString(const fs::path& path)
 	{

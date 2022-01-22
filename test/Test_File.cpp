@@ -1,4 +1,4 @@
-#include "../src/File.cpp"
+#include "../src/io/File.cpp"
 #include "test.h"
 
 #include <source_location>
@@ -8,7 +8,7 @@
 
 using namespace std;
 namespace fs = std::filesystem;
-using onest::File;
+using onest::io::File;
 
 namespace
 {

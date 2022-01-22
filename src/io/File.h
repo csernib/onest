@@ -2,7 +2,7 @@
 #include <string>
 
 
-namespace onest
+namespace onest::io
 {
 	class File final
 	{
