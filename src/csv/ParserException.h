@@ -1,12 +1,12 @@
 #pragma once
 
-#include <stdexcept>
+#include "../Exception.h"
 
 
 namespace onest::csv
 {
-	class ParserException : public std::runtime_error
+	class ParserException : public Exception
 	{
-		using runtime_error::runtime_error;
+		using Exception::Exception;
 	};
 }

@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
 	SOURCES
 	main.cpp
+	Test_CategoryFactory.cpp
 	Test_File.cpp
 	Test_Parser.cpp
 )

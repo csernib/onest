@@ -8,12 +8,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
 	SOURCES
 	src/main.cpp
+	src/category/CategoryFactory.cpp
 	src/csv/Parser.cpp
 	src/io/File.cpp
 )
 
 set(
 	HEADERS
+	src/Exception.h
+	src/category/Category.h
+	src/category/CategoryFactory.h
+	src/category/CategoryMatcher.h
+	src/category/DiscreteCategoryMatcher.h
+	src/category/RangeBasedCategoryMatcher.h
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/io/File.h
