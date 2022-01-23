@@ -11,6 +11,9 @@ namespace onest::category
 		{}
 
 	public:
+		Category() : myID(0)
+		{}
+
 		bool operator==(const Category&) const = default;
 		bool operator!=(const Category&) const = default;
 

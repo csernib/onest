@@ -8,9 +8,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
 	SOURCES
 	main.cpp
+	Test_AssessmentMatrix.cpp
 	Test_CategoryFactory.cpp
 	Test_File.cpp
 	Test_Parser.cpp
+)
+
+set(
+	PROGRAM_SOURCES
+	../src/category/CategoryFactory.cpp
+	../src/csv/Parser.cpp
+	../src/io/File.cpp
 )
 
 set(
@@ -21,6 +29,7 @@ set(
 add_executable(
 	onest_test
 	${SOURCES}
+	${PROGRAM_SOURCES}
 	${HEADERS}
 )
 

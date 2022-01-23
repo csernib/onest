@@ -1,7 +1,7 @@
+#include "../src/category/CategoryFactory.h"
 #include "../src/category/DiscreteCategoryMatcher.h"
 #include "../src/category/RangeBasedCategoryMatcher.h"
-
-#include "../src/category/CategoryFactory.cpp"
+#include "../src/Exception.h"
 #include "test.h"
 
 #include <limits>
@@ -34,6 +34,15 @@ namespace
 	}
 }
 
+CASE(TAG "Default-constructed category has zero ID.")
+{
+	// Given
+	Category defaultConstructedCategory;
+
+	// Then
+	EXPECT(extractCategory(defaultConstructedCategory) == 0);
+}
+
 CASE(TAG "Using discrete category matching works.")
 {
 	// Given
@@ -44,8 +53,8 @@ CASE(TAG "Using discrete category matching works.")
 	Category b = factory.createCategory("b");
 
 	// Then
-	EXPECT(extractCategory(a) == 0);
-	EXPECT(extractCategory(b) == 1);
+	EXPECT(extractCategory(a) == 1);
+	EXPECT(extractCategory(b) == 2);
 
 	// Except
 	EXPECT_THROWS_AS(factory.createCategory("c"), Exception);
@@ -62,9 +71,9 @@ CASE(TAG "Using range-based category matching works.")
 	Category c = factory.createCategory("2");
 
 	// Then
-	EXPECT(extractCategory(a) == 0);
-	EXPECT(extractCategory(b) == 1);
-	EXPECT(extractCategory(c) == 1);
+	EXPECT(extractCategory(a) == 1);
+	EXPECT(extractCategory(b) == 2);
+	EXPECT(extractCategory(c) == 2);
 
 	// Except
 	EXPECT_THROWS_AS(factory.createCategory("1.3"), Exception);
@@ -94,14 +103,14 @@ CASE(TAG "Matching is done in order.")
 	Category h = factory.createCategory("a");
 
 	// Then
-	EXPECT(extractCategory(a) == 0);
-	EXPECT(extractCategory(b) == 0);
-	EXPECT(extractCategory(c) == 0);
-	EXPECT(extractCategory(d) == 1);
-	EXPECT(extractCategory(e) == 1);
-	EXPECT(extractCategory(f) == 5);
-	EXPECT(extractCategory(g) == 6);
-	EXPECT(extractCategory(h) == 2);
+	EXPECT(extractCategory(a) == 1);
+	EXPECT(extractCategory(b) == 1);
+	EXPECT(extractCategory(c) == 1);
+	EXPECT(extractCategory(d) == 2);
+	EXPECT(extractCategory(e) == 2);
+	EXPECT(extractCategory(f) == 6);
+	EXPECT(extractCategory(g) == 7);
+	EXPECT(extractCategory(h) == 3);
 }
 
 CASE(TAG "Having too many matchers causes an exception.")
@@ -109,7 +118,7 @@ CASE(TAG "Having too many matchers causes an exception.")
 	// Given
 	vector<unique_ptr<CategoryMatcher>> matchers;
 
-	constexpr size_t intentionalOverflow = (size_t)numeric_limits<unsigned char>::max() + 2;
+	constexpr size_t intentionalOverflow = (size_t)numeric_limits<unsigned char>::max() + 1;
 	generate_n(back_inserter(matchers), intentionalOverflow, [] { return make_unique<DiscreteCategoryMatcher>("a"); });
 
 	// When, then

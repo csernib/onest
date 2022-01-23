@@ -11,7 +11,7 @@ namespace onest::category
 {
 	CategoryFactory::CategoryFactory(vector<unique_ptr<CategoryMatcher>> categoryMatchers)
 	{
-		constexpr auto maxNumberOfMatchers = numeric_limits<unsigned char>::max() + 1;
+		constexpr auto maxNumberOfMatchers = numeric_limits<unsigned char>::max();
 		const size_t actualNumberOfMatchers = categoryMatchers.size();
 
 		if (maxNumberOfMatchers < actualNumberOfMatchers)
@@ -28,7 +28,7 @@ namespace onest::category
 
 		for (size_t i = 0; i < actualNumberOfMatchers; ++i)
 		{
-			const unsigned char c = static_cast<unsigned char>(i);
+			const unsigned char c = static_cast<unsigned char>(i + 1);
 			myMatchers.emplace_back(move(categoryMatchers[i]), Category(c));
 		}
 	}

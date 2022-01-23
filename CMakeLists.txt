@@ -15,6 +15,7 @@ set(
 
 set(
 	HEADERS
+	src/AssessmentMatrix.h
 	src/Exception.h
 	src/category/Category.h
 	src/category/CategoryFactory.h
