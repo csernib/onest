@@ -1,4 +1,4 @@
-#include "../src/AssessmentMatrix.h"
+#include "../src/calc/AssessmentMatrix.h"
 #include "../src/category/CategoryFactory.h"
 #include "../src/category/DiscreteCategoryMatcher.h"
 #include "test.h"
@@ -7,7 +7,7 @@
 #define TAG "[AssessmentMatrix] "
 
 using namespace std;
-using onest::AssessmentMatrix;
+using onest::calc::AssessmentMatrix;
 using onest::category::Category;
 using onest::category::CategoryFactory;
 using onest::category::CategoryMatcher;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "category/Category.h"
+#include "../category/Category.h"
 
 #include <vector>
 
 
-namespace onest
+namespace onest::calc
 {
 	class AssessmentMatrix final
 	{

@@ -7,16 +7,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(
 	SOURCES
-	src/main.cpp
+	src/calc/ONEST.cpp
 	src/category/CategoryFactory.cpp
 	src/csv/Parser.cpp
 	src/io/File.cpp
+	src/main.cpp
 )
 
 set(
 	HEADERS
-	src/AssessmentMatrix.h
-	src/Exception.h
+	src/calc/AssessmentMatrix.h
+	src/calc/ONEST.h
 	src/category/Category.h
 	src/category/CategoryFactory.h
 	src/category/CategoryMatcher.h
@@ -25,6 +26,7 @@ set(
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/io/File.h
+	src/Exception.h
 )
 
 add_executable(
