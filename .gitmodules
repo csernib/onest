@@ -1,0 +1,3 @@
+[submodule "lest"]
+	path = ext/lest
+	url = https://github.com/martinmoene/lest.git
