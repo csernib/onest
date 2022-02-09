@@ -1,3 +1,6 @@
 [submodule "lest"]
 	path = ext/lest
 	url = https://github.com/martinmoene/lest.git
+[submodule "wx-widgets"]
+	path = ext/wx-widgets
+	url = https://github.com/wxWidgets/wxWidgets.git
