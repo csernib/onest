@@ -5,6 +5,8 @@ project(onest)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_definitions(UNICODE)
+
 set(
 	SOURCES
 	src/calc/ONEST.cpp
@@ -30,9 +32,16 @@ set(
 )
 
 add_executable(
-	onest
+	onest WIN32
 	${SOURCES}
 	${HEADERS}
 )
 
 add_subdirectory(test)
+
+
+set(wxUSE_STL ON)
+set(wxBUILD_SHARED OFF)
+add_subdirectory(ext/wx-widgets)
+target_include_directories(onest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ext/wx-widgets/include)
+target_link_libraries(onest wx::core)

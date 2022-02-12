@@ -1,8 +1,28 @@
-#include "csv/Parser.h"
+#include <wx/wxprec.h>
+
+#ifndef WC_PRECOMP
+	#include <wx/wx.h>
+#endif
 
 
-int main()
+class MainFrame : public wxFrame
 {
-	using namespace onest;
-	return 0;
-}
+public:
+	MainFrame();
+};
+
+class Application : public wxApp
+{
+public:
+	bool OnInit() override
+	{
+		MainFrame* frame = new MainFrame();
+		frame->Show(true);
+		return true;
+	}
+};
+
+wxIMPLEMENT_APP(Application);
+
+MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Hello wxWidgets!")
+{}
