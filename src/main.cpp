@@ -1,28 +1,25 @@
-#include <wx/wxprec.h>
+#include "gui/MainFrame.h"
 
+#include <wx/wxprec.h>
 #ifndef WC_PRECOMP
 	#include <wx/wx.h>
 #endif
 
 
-class MainFrame : public wxFrame
-{
-public:
-	MainFrame();
-};
+using onest::gui::MainFrame;
 
-class Application : public wxApp
+namespace
 {
-public:
-	bool OnInit() override
+	class Application final : public wxApp
 	{
-		MainFrame* frame = new MainFrame();
-		frame->Show(true);
-		return true;
-	}
-};
+	public:
+		bool OnInit() override
+		{
+			MainFrame* frame = new MainFrame();
+			frame->Show(true);
+			return true;
+		}
+	};
+}
 
 wxIMPLEMENT_APP(Application);
-
-MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Hello wxWidgets!")
-{}

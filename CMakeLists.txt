@@ -12,6 +12,8 @@ set(
 	src/calc/ONEST.cpp
 	src/category/CategoryFactory.cpp
 	src/csv/Parser.cpp
+	src/gui/MainFrame.cpp
+	src/gui/Table.cpp
 	src/io/File.cpp
 	src/main.cpp
 )
@@ -27,6 +29,9 @@ set(
 	src/category/RangeBasedCategoryMatcher.h
 	src/csv/Parser.h
 	src/csv/ParserException.h
+	src/csv/Sheet.h
+	src/gui/MainFrame.h
+	src/gui/Table.h
 	src/io/File.h
 	src/Exception.h
 )
