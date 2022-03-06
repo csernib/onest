@@ -11,5 +11,11 @@ namespace onest::gui
 	{
 	public:
 		Table(wxWindow* parent, const csv::Sheet& sheet);
+
+		void setFirstRowAsHeader(bool firstRowAsHeader);
+		bool isFirstRowHeader() const { return myFirstRowIsHeader; }
+
+	private:
+		bool myFirstRowIsHeader = false;
 	};
 }

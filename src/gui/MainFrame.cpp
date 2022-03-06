@@ -1,7 +1,9 @@
 #include "MainFrame.h"
 #include "Table.h"
 
+#include <wx/checkbox.h>
 #include <wx/filedlg.h>
+#include <wx/sizer.h>
 
 #include "../csv/Parser.h"
 #include "../io/File.h"
@@ -20,6 +22,19 @@ namespace onest::gui
 		}
 		fileOpenDialog->Destroy();
 
-		new Table(this, sheet);
+		wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
+
+		Table* table = new Table(this, sheet);
+
+		wxCheckBox* headerCheckbox = new wxCheckBox(this, -1, "Header");
+		headerCheckbox->SetValue(table->isFirstRowHeader());
+		headerCheckbox->Bind(wxEVT_CHECKBOX, [table](wxCommandEvent& e)
+		{
+			table->setFirstRowAsHeader(e.IsChecked());
+		});
+		horizontalSizer->Add(headerCheckbox);
+		horizontalSizer->Add(table);
+
+		SetSizer(horizontalSizer);
 	}
 }
