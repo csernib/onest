@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../category/Category.h"
+#include "Category.h"
 
 #include <vector>
 
@@ -10,7 +10,7 @@ namespace onest::calc
 	class AssessmentMatrix final
 	{
 	private:
-		typedef std::vector<category::Category> Matrix;
+		typedef std::vector<Category> Matrix;
 
 	public:
 		explicit AssessmentMatrix(unsigned numberOfObservers, unsigned numberOfCases)
@@ -18,12 +18,12 @@ namespace onest::calc
 			, myNumberOfObservers(numberOfObservers)
 		{}
 
-		void set(unsigned observerIndex, unsigned caseIndex, category::Category assessment)
+		void set(unsigned observerIndex, unsigned caseIndex, Category assessment)
 		{
 			myMatrix[convertToLinearAddress(observerIndex, caseIndex)] = assessment;
 		}
 
-		const category::Category& get(unsigned observerIndex, unsigned caseIndex) const
+		const Category& get(unsigned observerIndex, unsigned caseIndex) const
 		{
 			return myMatrix[convertToLinearAddress(observerIndex, caseIndex)];
 		}

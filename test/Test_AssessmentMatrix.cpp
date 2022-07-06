@@ -1,6 +1,5 @@
 #include "../src/calc/AssessmentMatrix.h"
-#include "../src/category/CategoryFactory.h"
-#include "../src/category/DiscreteCategoryMatcher.h"
+#include "../src/calc/CategoryFactory.h"
 #include "test.h"
 
 
@@ -8,10 +7,8 @@
 
 using namespace std;
 using onest::calc::AssessmentMatrix;
-using onest::category::Category;
-using onest::category::CategoryFactory;
-using onest::category::CategoryMatcher;
-using onest::category::DiscreteCategoryMatcher;
+using onest::calc::Category;
+using onest::calc::CategoryFactory;
 
 CASE(TAG "Getting and setting matrix elements works.")
 {
@@ -20,12 +17,7 @@ CASE(TAG "Getting and setting matrix elements works.")
 	const unsigned numOfCases = 4;
 
 	AssessmentMatrix matrix(numOfObservers, numOfCases);
-
-	vector<unique_ptr<CategoryMatcher>> matchers;
-	matchers.emplace_back(make_unique<DiscreteCategoryMatcher>("a"));
-	matchers.emplace_back(make_unique<DiscreteCategoryMatcher>("b"));
-	matchers.emplace_back(make_unique<DiscreteCategoryMatcher>("c"));
-	CategoryFactory factory(move(matchers));
+	CategoryFactory factory;
 
 	const char* matrixValues[numOfCases][numOfObservers] =
 	{

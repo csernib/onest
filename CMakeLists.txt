@@ -9,8 +9,8 @@ add_compile_definitions(UNICODE)
 
 set(
 	SOURCES
+	src/calc/CategoryFactory.cpp
 	src/calc/ONEST.cpp
-	src/category/CategoryFactory.cpp
 	src/csv/Parser.cpp
 	src/gui/MainFrame.cpp
 	src/gui/Table.cpp
@@ -21,12 +21,9 @@ set(
 set(
 	HEADERS
 	src/calc/AssessmentMatrix.h
+	src/calc/Category.h
+	src/calc/CategoryFactory.h
 	src/calc/ONEST.h
-	src/category/Category.h
-	src/category/CategoryFactory.h
-	src/category/CategoryMatcher.h
-	src/category/DiscreteCategoryMatcher.h
-	src/category/RangeBasedCategoryMatcher.h
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/csv/Sheet.h

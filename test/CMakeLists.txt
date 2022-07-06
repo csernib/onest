@@ -16,7 +16,7 @@ set(
 
 set(
 	PROGRAM_SOURCES
-	../src/category/CategoryFactory.cpp
+	../src/calc/CategoryFactory.cpp
 	../src/csv/Parser.cpp
 	../src/io/File.cpp
 )

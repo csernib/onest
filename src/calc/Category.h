@@ -1,13 +1,14 @@
 #pragma once
 
 
-namespace onest::category
+namespace onest::calc
 {
 	class Category final
 	{
 	private:
 		friend class CategoryFactory;
-		Category(unsigned char id) : myID(id)
+		typedef unsigned char idtype;
+		Category(idtype id) : myID(id)
 		{}
 
 	public:
@@ -18,6 +19,6 @@ namespace onest::category
 		bool operator!=(const Category&) const = default;
 
 	private:
-		unsigned char myID;
+		idtype myID;
 	};
 }
