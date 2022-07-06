@@ -29,6 +29,21 @@ namespace onest::gui
 				break;
 			}
 		}
+
+		Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
+		{
+			const int columnClicked = event.GetCol();
+			const wxColor red(255, 0, 0);
+			const wxColor white(255, 255, 255);
+
+			BeginBatch();
+			for (int i = 0; i < GetNumberRows(); ++i)
+			{
+				const wxColor currentColor = GetCellBackgroundColour(i, columnClicked);
+				SetCellBackgroundColour(i, columnClicked, currentColor == red ? white : red);
+			}
+			EndBatch();
+		});
 	}
 
 	void Table::setFirstRowAsHeader(bool firstRowAsHeader)
