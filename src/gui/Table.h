@@ -2,6 +2,8 @@
 
 #include "../csv/Sheet.h"
 
+#include <vector>
+
 #include <wx/grid.h>
 
 
@@ -16,6 +18,10 @@ namespace onest::gui
 		bool isFirstRowHeader() const { return myFirstRowIsHeader; }
 
 	private:
+		void setFirstRowAsHeaderWithoutStatusRefresh(bool firstRowAsHeader);
+		void refreshDisplayedColumnStatus(int column);
+
 		bool myFirstRowIsHeader = false;
+		std::vector<bool> myColumnEnabledStatuses;
 	};
 }

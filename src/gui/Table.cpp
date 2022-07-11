@@ -10,6 +10,8 @@ namespace onest::gui
 		if (sheet.empty() || sheet[0].empty())
 			return;
 
+		myColumnEnabledStatuses.resize(sheet[0].size(), true);
+
 		CreateGrid(sheet.size(), sheet[0].size());
 		for (size_t i = 0; i < sheet.size(); ++i)
 		{
@@ -25,7 +27,7 @@ namespace onest::gui
 			double d;
 			if (!GetCellValue(0, i).ToDouble(&d))
 			{
-				setFirstRowAsHeader(true);
+				setFirstRowAsHeaderWithoutStatusRefresh(true);
 				break;
 			}
 		}
@@ -33,20 +35,22 @@ namespace onest::gui
 		Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
 			const int columnClicked = event.GetCol();
-			const wxColor red(255, 0, 0);
-			const wxColor white(255, 255, 255);
+			if (columnClicked < 0)
+				return;
 
-			BeginBatch();
-			for (int i = 0; i < GetNumberRows(); ++i)
-			{
-				const wxColor currentColor = GetCellBackgroundColour(i, columnClicked);
-				SetCellBackgroundColour(i, columnClicked, currentColor == red ? white : red);
-			}
-			EndBatch();
+			myColumnEnabledStatuses[columnClicked].flip();
+			refreshDisplayedColumnStatus(columnClicked);
 		});
 	}
 
 	void Table::setFirstRowAsHeader(bool firstRowAsHeader)
+	{
+		setFirstRowAsHeaderWithoutStatusRefresh(firstRowAsHeader);
+		for (int i = 0; i < this->GetNumberCols(); ++i)
+			refreshDisplayedColumnStatus(i);
+	}
+
+	void Table::setFirstRowAsHeaderWithoutStatusRefresh(bool firstRowAsHeader)
 	{
 		if (firstRowAsHeader)
 		{
@@ -74,5 +78,22 @@ namespace onest::gui
 		}
 
 		myFirstRowIsHeader = firstRowAsHeader;
+	}
+
+	void Table::refreshDisplayedColumnStatus(int column)
+	{
+		assert(column >= 0 && column < GetNumberCols());
+
+		const wxColor red(255, 0, 0);
+		const wxColor white(255, 255, 255);
+
+		const bool columnIsEnabled = myColumnEnabledStatuses[column];
+
+		BeginBatch();
+		for (int i = 0; i < GetNumberRows(); ++i)
+		{
+			SetCellBackgroundColour(i, column, columnIsEnabled ? white : red);
+		}
+		EndBatch();
 	}
 }
