@@ -17,6 +17,7 @@ namespace onest::gui
 		void setFirstRowAsHeader(bool firstRowAsHeader);
 		bool isFirstRowHeader() const { return myFirstRowIsHeader; }
 
+		void changeColumnEnableStatus(int column);
 		bool isColumnEnabled(int column) const { return myColumnEnabledStatuses.at((size_t)column); }
 		unsigned getNumberOfEnabledColumns() const;
 

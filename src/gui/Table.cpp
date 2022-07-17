@@ -34,18 +34,6 @@ namespace onest::gui
 				break;
 			}
 		}
-
-		Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
-		{
-			const int columnClicked = event.GetCol();
-			if (columnClicked < 0)
-				return;
-
-			myColumnEnabledStatuses[columnClicked].flip();
-			refreshDisplayedColumnStatus(columnClicked);
-
-			// TODO: Recalculate values displayed on main frame!
-		});
 	}
 
 	void Table::setFirstRowAsHeader(bool firstRowAsHeader)
@@ -53,6 +41,15 @@ namespace onest::gui
 		setFirstRowAsHeaderWithoutStatusRefresh(firstRowAsHeader);
 		for (int i = 0; i < this->GetNumberCols(); ++i)
 			refreshDisplayedColumnStatus(i);
+	}
+
+	void Table::changeColumnEnableStatus(int column)
+	{
+		if (column < 0 || column >= GetNumberCols())
+			return;
+
+		myColumnEnabledStatuses[column].flip();
+		refreshDisplayedColumnStatus(column);
 	}
 
 	unsigned Table::getNumberOfEnabledColumns() const

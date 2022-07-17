@@ -49,7 +49,13 @@ namespace onest::gui
 		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
 		verticalSizer->Add(pMyOPANValue);
 
-		pMyTable->Bind(wxEVT_GRID_CELL_CHANGED, [this](const wxGridEvent& e)
+		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
+		{
+			pMyTable->changeColumnEnableStatus(event.GetCol());
+			recalculateValues();
+		});
+
+		pMyTable->Bind(wxEVT_GRID_CELL_CHANGED, [this](const wxGridEvent&)
 		{
 			recalculateValues();
 		});
@@ -80,13 +86,14 @@ namespace onest::gui
 		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
 		for (int i = 0; i < numberOfRows; ++i)
 		{
-			for (int j = 0; j < numberOfColumns; ++j)
+			for (int j = 0, observerIndex = 0; j < numberOfColumns; ++j)
 			{
 				if (!pMyTable->isColumnEnabled(j))
 					continue;
 
 				const string cellValue = pMyTable->GetCellValue(i, j).ToStdString();
-				matrix.set(j, i, categoryFactory.createCategory(cellValue));
+				matrix.set(observerIndex, i, categoryFactory.createCategory(cellValue));
+				++observerIndex;
 			}
 		}
 
