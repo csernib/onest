@@ -29,6 +29,8 @@ namespace onest::gui
 		}
 		fileOpenDialog->Destroy();
 
+		CreateStatusBar();
+
 		wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
 		wxBoxSizer* verticalSizer = new wxBoxSizer(wxVERTICAL);
@@ -67,10 +69,21 @@ namespace onest::gui
 
 	void MainFrame::recalculateValues()
 	{
-		const AssessmentMatrix matrix = createAssessmentMatrixFromGUI();
-		const ONEST onest = calculateRandomPermutations(matrix, 100);
+		SetStatusText("Calculating ONEST...");
+		try
+		{
+			// TODO: Do it in a different thread!
+			const AssessmentMatrix matrix = createAssessmentMatrixFromGUI();
+			const ONEST onest = calculateRandomPermutations(matrix, 100);
 
-		pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
+			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
+			SetStatusText("Ready");
+		}
+		catch (const exception& ex)
+		{
+			pMyOPANValue->SetLabelText(OPAN_TEXT + "N/A");
+			SetStatusText("Error: "s + ex.what());
+		}
 	}
 
 	AssessmentMatrix MainFrame::createAssessmentMatrixFromGUI()
