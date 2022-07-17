@@ -11,4 +11,8 @@ namespace onest::calc
 
 	ONEST calculateAllPermutations(const AssessmentMatrix& matrix);
 	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations);
+
+	number_t calculateOPAN(const ONEST& onest);
+	std::pair<number_t, number_t> calculateMinMaxForObserverCount(const ONEST& onest, unsigned observerCount);
+	unsigned calculateNumOfObserversNeeded(const ONEST& onest);
 }

@@ -78,6 +78,9 @@ namespace onest::calc
 {
 	ONEST calculateAllPermutations(const AssessmentMatrix& matrix)
 	{
+		if (matrix.getTotalNumberOfObservers() == 1)
+			return ONEST{ { number_t(1.0) } };
+
 		set<ObserverPermutation> allPermutations;
 
 		ObserverPermutation permutation = generateFirstPermutation(matrix.getTotalNumberOfObservers());
@@ -92,7 +95,7 @@ namespace onest::calc
 
 	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations)
 	{
-		if (numberOfPermutations >= factorial(matrix.getTotalNumberOfObservers()))
+		if (numberOfPermutations >= factorial(matrix.getTotalNumberOfObservers()) || numberOfPermutations == 0)
 			return calculateAllPermutations(matrix);
 
 		set<ObserverPermutation> randomPermutations;
@@ -111,5 +114,11 @@ namespace onest::calc
 		}
 
 		return calculateONEST(matrix, move(randomPermutations));
+	}
+
+	number_t calculateOPAN(const ONEST& onest)
+	{
+		const OPAC& anyOPAC = onest[0];
+		return anyOPAC[anyOPAC.size() - 1];
 	}
 }

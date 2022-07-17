@@ -5,12 +5,19 @@
 #include <wx/filedlg.h>
 #include <wx/sizer.h>
 
+#include "../calc/CategoryFactory.h"
+#include "../calc/ONEST.h"
 #include "../csv/Parser.h"
 #include "../io/File.h"
 
 
+using namespace onest::calc;
+using namespace std;
+
 namespace onest::gui
 {
+	const string MainFrame::OPAN_TEXT = "OPA(N): ";
+
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
 	{
 		csv::Sheet sheet;
@@ -24,17 +31,65 @@ namespace onest::gui
 
 		wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
-		Table* table = new Table(this, sheet);
+		wxBoxSizer* verticalSizer = new wxBoxSizer(wxVERTICAL);
+		horizontalSizer->Add(verticalSizer);
+
+		pMyTable = new Table(this, sheet);
+		horizontalSizer->Add(pMyTable);
 
 		wxCheckBox* headerCheckbox = new wxCheckBox(this, -1, "Header");
-		headerCheckbox->SetValue(table->isFirstRowHeader());
-		headerCheckbox->Bind(wxEVT_CHECKBOX, [table](wxCommandEvent& e)
+		verticalSizer->Add(headerCheckbox);
+		headerCheckbox->SetValue(pMyTable->isFirstRowHeader());
+		headerCheckbox->Bind(wxEVT_CHECKBOX, [this](const wxCommandEvent& e)
 		{
-			table->setFirstRowAsHeader(e.IsChecked());
+			pMyTable->setFirstRowAsHeader(e.IsChecked());
+			recalculateValues();
 		});
-		horizontalSizer->Add(headerCheckbox);
-		horizontalSizer->Add(table);
+
+		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
+		verticalSizer->Add(pMyOPANValue);
+
+		pMyTable->Bind(wxEVT_GRID_CELL_CHANGED, [this](const wxGridEvent& e)
+		{
+			recalculateValues();
+		});
 
 		SetSizer(horizontalSizer);
+
+		recalculateValues();
+	}
+
+	void MainFrame::recalculateValues()
+	{
+		const AssessmentMatrix matrix = createAssessmentMatrixFromGUI();
+		const ONEST onest = calculateRandomPermutations(matrix, 100);
+
+		pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
+	}
+
+	AssessmentMatrix MainFrame::createAssessmentMatrixFromGUI()
+	{
+		const int numberOfColumns = pMyTable->GetNumberCols();
+		const int numberOfRows = pMyTable->GetNumberRows();
+
+		const unsigned numberOfObservers = pMyTable->getNumberOfEnabledColumns();
+		const unsigned numberOfCases = static_cast<unsigned>(numberOfRows);
+
+		CategoryFactory categoryFactory;
+
+		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
+		for (int i = 0; i < numberOfRows; ++i)
+		{
+			for (int j = 0; j < numberOfColumns; ++j)
+			{
+				if (!pMyTable->isColumnEnabled(j))
+					continue;
+
+				const string cellValue = pMyTable->GetCellValue(i, j).ToStdString();
+				matrix.set(j, i, categoryFactory.createCategory(cellValue));
+			}
+		}
+
+		return matrix;
 	}
 }

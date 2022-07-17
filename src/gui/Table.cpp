@@ -1,7 +1,10 @@
 #include "Table.h"
 
+#include <algorithm>
 #include <cassert>
 
+
+using std::ranges::count;
 
 namespace onest::gui
 {
@@ -40,6 +43,8 @@ namespace onest::gui
 
 			myColumnEnabledStatuses[columnClicked].flip();
 			refreshDisplayedColumnStatus(columnClicked);
+
+			// TODO: Recalculate values displayed on main frame!
 		});
 	}
 
@@ -48,6 +53,11 @@ namespace onest::gui
 		setFirstRowAsHeaderWithoutStatusRefresh(firstRowAsHeader);
 		for (int i = 0; i < this->GetNumberCols(); ++i)
 			refreshDisplayedColumnStatus(i);
+	}
+
+	unsigned Table::getNumberOfEnabledColumns() const
+	{
+		return static_cast<unsigned>(count(myColumnEnabledStatuses, true));
 	}
 
 	void Table::setFirstRowAsHeaderWithoutStatusRefresh(bool firstRowAsHeader)

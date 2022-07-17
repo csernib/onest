@@ -1,5 +1,6 @@
 #include "../src/calc/AssessmentMatrix.h"
 #include "../src/calc/CategoryFactory.h"
+#include "../src/Exception.h"
 #include "test.h"
 
 
@@ -9,6 +10,7 @@ using namespace std;
 using onest::calc::AssessmentMatrix;
 using onest::calc::Category;
 using onest::calc::CategoryFactory;
+using onest::Exception;
 
 CASE(TAG "Getting and setting matrix elements works.")
 {
@@ -49,4 +51,11 @@ CASE(TAG "Getting and setting matrix elements works.")
 	EXPECT(matrix.get(2, 1) == factory.createCategory("a"));
 	EXPECT(matrix.get(2, 2) == factory.createCategory("b"));
 	EXPECT(matrix.get(2, 3) == factory.createCategory("b"));
+}
+
+CASE(TAG "Attempting to construct matrix of zero size throws an exception.")
+{
+	EXPECT_THROWS_AS(AssessmentMatrix(0, 0), Exception);
+	EXPECT_THROWS_AS(AssessmentMatrix(0, 1), Exception);
+	EXPECT_THROWS_AS(AssessmentMatrix(1, 0), Exception);
 }

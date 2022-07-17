@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Category.h"
+#include "../Exception.h"
 
 #include <vector>
 
@@ -16,7 +17,10 @@ namespace onest::calc
 		explicit AssessmentMatrix(unsigned numberOfObservers, unsigned numberOfCases)
 			: myMatrix(numberOfObservers * numberOfCases)
 			, myNumberOfObservers(numberOfObservers)
-		{}
+		{
+			if (myMatrix.empty())
+				throw Exception("Cannot create matrix of zero size.");
+		}
 
 		void set(unsigned observerIndex, unsigned caseIndex, Category assessment)
 		{
