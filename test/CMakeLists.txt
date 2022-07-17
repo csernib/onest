@@ -11,12 +11,14 @@ set(
 	Test_AssessmentMatrix.cpp
 	Test_CategoryFactory.cpp
 	Test_File.cpp
+	Test_ONEST.cpp
 	Test_Parser.cpp
 )
 
 set(
 	PROGRAM_SOURCES
 	../src/calc/CategoryFactory.cpp
+	../src/calc/ONEST.cpp
 	../src/csv/Parser.cpp
 	../src/io/File.cpp
 )

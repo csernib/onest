@@ -95,7 +95,10 @@ namespace onest::calc
 
 	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations)
 	{
-		if (numberOfPermutations >= factorial(matrix.getTotalNumberOfObservers()) || numberOfPermutations == 0)
+		if (numberOfPermutations == 0)
+			return ONEST();
+
+		if (numberOfPermutations >= factorial(matrix.getTotalNumberOfObservers()))
 			return calculateAllPermutations(matrix);
 
 		set<ObserverPermutation> randomPermutations;
