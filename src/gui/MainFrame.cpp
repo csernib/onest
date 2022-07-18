@@ -17,6 +17,7 @@ using namespace std;
 namespace onest::gui
 {
 	const string MainFrame::OPAN_TEXT = "OPA(N): ";
+	const string MainFrame::BANDWIDTH_TEXT = "Bandwidth: ";
 
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
 	{
@@ -51,6 +52,9 @@ namespace onest::gui
 		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
 		verticalSizer->Add(pMyOPANValue);
 
+		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
+		verticalSizer->Add(pMyBandwidthValue);
+
 		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
 			pMyTable->changeColumnEnableStatus(event.GetCol());
@@ -77,11 +81,13 @@ namespace onest::gui
 			const ONEST onest = calculateRandomPermutations(matrix, 100);
 
 			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
+			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(onest)));
 			SetStatusText("Ready");
 		}
 		catch (const exception& ex)
 		{
 			pMyOPANValue->SetLabelText(OPAN_TEXT + "N/A");
+			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + "N/A");
 			SetStatusText("Error: "s + ex.what());
 		}
 	}

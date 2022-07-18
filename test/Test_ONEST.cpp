@@ -1,5 +1,6 @@
 #include "../src/calc/CategoryFactory.h"
 #include "../src/calc/ONEST.h"
+#include "../src/Exception.h"
 #include "test.h"
 
 #include <algorithm>
@@ -9,6 +10,8 @@
 
 using namespace std;
 using namespace onest::calc;
+
+using onest::Exception;
 
 namespace
 {
@@ -118,4 +121,35 @@ CASE(TAG "OPA(N) is calculated correctly.")
 
 	// Then
 	EXPECT(opan == 0.25);
+}
+
+CASE(TAG "Attempting to calculate OPA(N) from empty ONEST throws.")
+{
+	// Given
+	const ONEST emptyONEST;
+
+	// When, then
+	EXPECT_THROWS_AS(calculateOPAN(emptyONEST), Exception);
+}
+
+CASE(TAG "Bandwidth is calculated correctly.")
+{
+	// Given
+	const AssessmentMatrix matrix = generateTestMatrix();
+	const ONEST onest = calculateAllPermutations(matrix);
+
+	// When
+	const number_t bandwidth = calculateBandwidth(onest);
+
+	// Then
+	EXPECT(bandwidth == 0.50);
+}
+
+CASE(TAG "Attempting to calculate bandwidth from empty ONEST throws.")
+{
+	// Given
+	const ONEST emptyONEST;
+
+	// When, then
+	EXPECT_THROWS_AS(calculateBandwidth(emptyONEST), Exception);
 }

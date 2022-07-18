@@ -121,7 +121,28 @@ namespace onest::calc
 
 	number_t calculateOPAN(const ONEST& onest)
 	{
+		if (onest.empty())
+			throw Exception("OPA(N) is undefined for empty ONEST");
+
 		const OPAC& anyOPAC = onest[0];
 		return anyOPAC[anyOPAC.size() - 1];
+	}
+
+	number_t calculateBandwidth(const ONEST& onest)
+	{
+		if (onest.empty())
+			throw Exception("Bandwidth is undefined for empty ONEST.");
+
+		number_t min = numeric_limits<number_t>::max();
+		number_t max = numeric_limits<number_t>::min();
+		for (const OPAC& opac : onest)
+		{
+			if (min > opac[0])
+				min = opac[0];
+			if (max < opac[0])
+				max = opac[0];
+		}
+
+		return max - min;
 	}
 }

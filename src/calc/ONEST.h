@@ -13,6 +13,6 @@ namespace onest::calc
 	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations);
 
 	number_t calculateOPAN(const ONEST& onest);
-	std::pair<number_t, number_t> calculateMinMaxForObserverCount(const ONEST& onest, unsigned observerCount);
+	number_t calculateBandwidth(const ONEST& onest);
 	unsigned calculateNumOfObserversNeeded(const ONEST& onest);
 }

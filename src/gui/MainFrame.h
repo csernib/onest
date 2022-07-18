@@ -16,6 +16,7 @@ namespace onest::gui
 	{
 	private:
 		static const std::string OPAN_TEXT;
+		static const std::string BANDWIDTH_TEXT;
 
 	public:
 		MainFrame();
@@ -26,5 +27,6 @@ namespace onest::gui
 
 		Table* pMyTable;
 		wxStaticText* pMyOPANValue;
+		wxStaticText* pMyBandwidthValue;
 	};
 }
