@@ -4,3 +4,6 @@
 [submodule "wx-widgets"]
 	path = ext/wx-widgets
 	url = https://github.com/wxWidgets/wxWidgets.git
+[submodule "matplot++"]
+	path = ext/matplot++
+	url = https://github.com/alandefreitas/matplotplusplus.git
