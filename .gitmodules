@@ -7,3 +7,6 @@
 [submodule "matplot++"]
 	path = ext/matplot++
 	url = https://github.com/alandefreitas/matplotplusplus.git
+[submodule "glfw"]
+	path = ext/glfw
+	url = https://github.com/glfw/glfw.git
