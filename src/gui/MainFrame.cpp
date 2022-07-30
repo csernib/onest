@@ -40,6 +40,14 @@ namespace onest::gui
 		pMyTable = new Table(this, sheet);
 		horizontalSizer->Add(pMyTable);
 
+		Bind(wxEVT_SIZE, [this, verticalSizer](wxSizeEvent& e)
+		{
+			auto size = GetClientSize();
+			verticalSizer->SetMinSize(size / 3);
+			pMyTable->SetMinSize({ size.x / 3 * 2, size.y });
+			e.Skip();
+		});
+
 		wxCheckBox* headerCheckbox = new wxCheckBox(this, -1, "Header");
 		verticalSizer->Add(headerCheckbox);
 		headerCheckbox->SetValue(pMyTable->isFirstRowHeader());
