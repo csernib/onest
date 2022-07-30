@@ -70,7 +70,18 @@ namespace
 
 	constexpr unsigned factorial(unsigned n)
 	{
-		return n <= 1 ? 1 : n * factorial(n - 1);
+		if (n <= 1)
+			return 1;
+
+		if (n == std::numeric_limits<unsigned>::max())
+			return std::numeric_limits<unsigned>::max();
+
+		const unsigned previousFactorial = factorial(n - 1);
+		const unsigned currentFactorial = n * previousFactorial;
+		if (currentFactorial / n != previousFactorial)
+			return std::numeric_limits<unsigned>::max();
+
+		return currentFactorial;
 	}
 }
 
