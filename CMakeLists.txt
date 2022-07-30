@@ -12,6 +12,7 @@ set(
 	src/calc/CategoryFactory.cpp
 	src/calc/ONEST.cpp
 	src/csv/Parser.cpp
+	src/gui/Diagram.cpp
 	src/gui/MainFrame.cpp
 	src/gui/Table.cpp
 	src/io/File.cpp
@@ -27,6 +28,7 @@ set(
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/csv/Sheet.h
+	src/gui/Diagram.h
 	src/gui/MainFrame.h
 	src/gui/Table.h
 	src/io/File.h
@@ -43,10 +45,11 @@ add_subdirectory(test)
 
 
 set(wxUSE_STL ON)
+set(wxUSE_GLCANVAS ON)
 set(wxBUILD_SHARED OFF)
 add_subdirectory(ext/wx-widgets)
 target_include_directories(onest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ext/wx-widgets/include)
-target_link_libraries(onest wx::core)
+target_link_libraries(onest wx::core wx::gl)
 
 add_subdirectory(ext/glfw)
 

@@ -11,6 +11,7 @@
 namespace onest::gui
 {
 	class Table;
+	class Diagram;
 
 	class MainFrame final : public wxFrame
 	{
@@ -26,6 +27,7 @@ namespace onest::gui
 		calc::AssessmentMatrix createAssessmentMatrixFromGUI();
 
 		Table* pMyTable;
+		Diagram* pMyDiagram;
 		wxStaticText* pMyOPANValue;
 		wxStaticText* pMyBandwidthValue;
 	};

@@ -1,4 +1,5 @@
 #include "MainFrame.h"
+#include "Diagram.h"
 #include "Table.h"
 
 #include <wx/checkbox.h>
@@ -35,16 +36,15 @@ namespace onest::gui
 		wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
 		wxBoxSizer* verticalSizer = new wxBoxSizer(wxVERTICAL);
-		horizontalSizer->Add(verticalSizer);
+		horizontalSizer->Add(verticalSizer, wxSizerFlags(1).Expand());
 
 		pMyTable = new Table(this, sheet);
-		horizontalSizer->Add(pMyTable);
+		horizontalSizer->Add(pMyTable, wxSizerFlags(2).Expand());
 
 		Bind(wxEVT_SIZE, [this, verticalSizer](wxSizeEvent& e)
 		{
 			auto size = GetClientSize();
-			verticalSizer->SetMinSize(size / 3);
-			pMyTable->SetMinSize({ size.x / 3 * 2, size.y });
+			verticalSizer->SetMinSize(size.x / 3, size.y);
 			e.Skip();
 		});
 
@@ -62,6 +62,9 @@ namespace onest::gui
 
 		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
 		verticalSizer->Add(pMyBandwidthValue);
+
+		pMyDiagram = new Diagram(this);
+		verticalSizer->Add(pMyDiagram, wxSizerFlags(1).Expand());
 
 		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
@@ -90,12 +93,16 @@ namespace onest::gui
 
 			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(onest)));
+
+			pMyDiagram->plotONEST(onest);
+
 			SetStatusText("Ready");
 		}
 		catch (const exception& ex)
 		{
 			pMyOPANValue->SetLabelText(OPAN_TEXT + "N/A");
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + "N/A");
+			pMyDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
 		}
 	}
