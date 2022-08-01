@@ -17,6 +17,9 @@ namespace onest::gui
 		void setFirstRowAsHeader(bool firstRowAsHeader);
 		bool isFirstRowHeader() const { return myFirstRowIsHeader; }
 
+		void setCellHue(int row, int column, unsigned hueIndex, unsigned numberOfHuesInUse);
+		void resetCellHue(int row, int column);
+
 		void changeColumnEnableStatus(int column);
 		bool isColumnEnabled(int column) const { return myColumnEnabledStatuses.at((size_t)column); }
 		unsigned getNumberOfEnabledColumns() const;

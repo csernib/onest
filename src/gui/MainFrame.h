@@ -25,7 +25,7 @@ namespace onest::gui
 
 	private:
 		void recalculateValues();
-		calc::AssessmentMatrix createAssessmentMatrixFromGUI();
+		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors();
 
 		Table* pMyTable;
 		Diagram* pMyDiagram;

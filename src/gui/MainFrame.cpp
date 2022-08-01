@@ -94,7 +94,7 @@ namespace onest::gui
 		try
 		{
 			// TODO: Do it in a different thread!
-			const AssessmentMatrix matrix = createAssessmentMatrixFromGUI();
+			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors();
 			const ONEST onest = calculateRandomPermutations(matrix, 100);
 
 			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
@@ -113,7 +113,7 @@ namespace onest::gui
 		}
 	}
 
-	AssessmentMatrix MainFrame::createAssessmentMatrixFromGUI()
+	AssessmentMatrix MainFrame::createAssessmentMatrixAndUpdateCellColors()
 	{
 		const int numberOfColumns = pMyTable->GetNumberCols();
 		const int numberOfRows = pMyTable->GetNumberRows();
@@ -126,8 +126,10 @@ namespace onest::gui
 			categorizer = Categorizer(ruleString);
 
 		CategoryFactory categoryFactory;
-
 		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
+
+		// TODO: Exception safety! (at the other places too!)
+		pMyTable->BeginBatch();
 		for (int i = 0; i < numberOfRows; ++i)
 		{
 			for (int j = 0, observerIndex = 0; j < numberOfColumns; ++j)
@@ -140,8 +142,14 @@ namespace onest::gui
 				string categoryValue = categorization.success ? string(categorization.category) : cellValue;
 				matrix.set(observerIndex, i, categoryFactory.createCategory(categoryValue));
 				++observerIndex;
+
+				if (categorization.success)
+					pMyTable->setCellHue(i, j, categorization.matchedRuleIndex, categorizer.getNumberOfRules());
+				else
+					pMyTable->resetCellHue(i, j);
 			}
 		}
+		pMyTable->EndBatch();
 
 		return matrix;
 	}

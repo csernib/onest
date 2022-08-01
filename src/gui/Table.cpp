@@ -1,5 +1,7 @@
 #include "Table.h"
 
+#include <wx/image.h>
+
 #include <algorithm>
 #include <cassert>
 
@@ -41,6 +43,27 @@ namespace onest::gui
 		setFirstRowAsHeaderWithoutStatusRefresh(firstRowAsHeader);
 		for (int i = 0; i < this->GetNumberCols(); ++i)
 			refreshDisplayedColumnStatus(i);
+	}
+
+	void Table::setCellHue(int row, int column, unsigned hueIndex, unsigned numberOfHuesInUse)
+	{
+		if (numberOfHuesInUse != 0)
+		{
+			const double hue = 1.0 / numberOfHuesInUse * hueIndex;
+			auto [r, g, b] = wxImage::HSVtoRGB({ hue, 0.5, 0.9 });
+
+			SetCellBackgroundColour(row, column, { r, g, b });
+		}
+		else
+		{
+			resetCellHue(row, column);
+		}
+	}
+
+	void Table::resetCellHue(int row, int column)
+	{
+		const wxColor white(255, 255, 255);
+		SetCellBackgroundColour(row, column, white);
 	}
 
 	void Table::changeColumnEnableStatus(int column)
@@ -91,7 +114,9 @@ namespace onest::gui
 	{
 		assert(column >= 0 && column < GetNumberCols());
 
-		const wxColor red(255, 0, 0);
+		const wxColor black(0, 0, 0);
+		const wxColor darkGrey(50, 50, 50);
+		const wxColor lightGrey(190, 190, 190);
 		const wxColor white(255, 255, 255);
 
 		const bool columnIsEnabled = myColumnEnabledStatuses[column];
@@ -99,7 +124,8 @@ namespace onest::gui
 		BeginBatch();
 		for (int i = 0; i < GetNumberRows(); ++i)
 		{
-			SetCellBackgroundColour(i, column, columnIsEnabled ? white : red);
+			SetCellTextColour(i, column, columnIsEnabled ? black : lightGrey);
+			SetCellBackgroundColour(i, column, columnIsEnabled ? white : darkGrey);
 		}
 		EndBatch();
 	}
