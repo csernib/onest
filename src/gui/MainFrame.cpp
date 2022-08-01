@@ -10,9 +10,11 @@
 #include "../calc/ONEST.h"
 #include "../csv/Parser.h"
 #include "../io/File.h"
+#include "../rule/Categorizer.h"
 
 
 using namespace onest::calc;
+using namespace onest::rule;
 using namespace std;
 
 namespace onest::gui
@@ -62,6 +64,10 @@ namespace onest::gui
 
 		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
 		verticalSizer->Add(pMyBandwidthValue);
+
+		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
+		verticalSizer->Add(pMyCategorizerInputField);
+		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
 
 		pMyDiagram = new Diagram(this);
 		verticalSizer->Add(pMyDiagram, wxSizerFlags(1).Expand());
@@ -115,6 +121,10 @@ namespace onest::gui
 		const unsigned numberOfObservers = pMyTable->getNumberOfEnabledColumns();
 		const unsigned numberOfCases = static_cast<unsigned>(numberOfRows);
 
+		Categorizer categorizer;
+		if (auto ruleString = pMyCategorizerInputField->GetValue().ToStdString(); !ruleString.empty())
+			categorizer = Categorizer(ruleString);
+
 		CategoryFactory categoryFactory;
 
 		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
@@ -126,7 +136,9 @@ namespace onest::gui
 					continue;
 
 				const string cellValue = pMyTable->GetCellValue(i, j).ToStdString();
-				matrix.set(observerIndex, i, categoryFactory.createCategory(cellValue));
+				Categorizer::Result categorization = categorizer.categorize(cellValue);
+				string categoryValue = categorization.success ? string(categorization.category) : cellValue;
+				matrix.set(observerIndex, i, categoryFactory.createCategory(categoryValue));
 				++observerIndex;
 			}
 		}

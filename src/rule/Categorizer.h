@@ -19,6 +19,7 @@ namespace onest::rule
 		};
 
 	public:
+		Categorizer() = default;
 		explicit Categorizer(std::string ruleString);
 
 		Result categorize(const std::string& value) const;

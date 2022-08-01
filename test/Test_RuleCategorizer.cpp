@@ -61,3 +61,14 @@ CASE(TAG "A categorizer does not match input not specified by the rule string.")
 	EXPECT_NOT(categorizer.categorize("def;ghi").success);
 	EXPECT_NOT(categorizer.categorize("1234").success);
 }
+
+CASE(TAG "A default constructed categorizer does not match any string.")
+{
+	// Given
+	Categorizer categorizer;
+
+	// When, then
+	EXPECT_NOT(categorizer.categorize("").success);
+	EXPECT_NOT(categorizer.categorize(";").success);
+	EXPECT_NOT(categorizer.categorize("abc").success);
+}

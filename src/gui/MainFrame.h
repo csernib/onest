@@ -6,6 +6,7 @@
 
 #include <wx/frame.h>
 #include <wx/stattext.h>
+#include <wx/textctrl.h>
 
 
 namespace onest::gui
@@ -30,5 +31,6 @@ namespace onest::gui
 		Diagram* pMyDiagram;
 		wxStaticText* pMyOPANValue;
 		wxStaticText* pMyBandwidthValue;
+		wxTextCtrl* pMyCategorizerInputField;
 	};
 }
