@@ -16,6 +16,10 @@ set(
 	src/gui/MainFrame.cpp
 	src/gui/Table.cpp
 	src/io/File.cpp
+	src/rule/parser/ParseIntervalRule.cpp
+	src/rule/parser/Util.cpp
+	src/rule/Categorizer.cpp
+	src/rule/Parser.cpp
 	src/main.cpp
 )
 
@@ -32,6 +36,16 @@ set(
 	src/gui/MainFrame.h
 	src/gui/Table.h
 	src/io/File.h
+	src/rule/parser/ParseIntervalRule.h
+	src/rule/parser/ParseLiteralRule.h
+	src/rule/parser/ParseOrRule.h
+	src/rule/parser/Util.h
+	src/rule/Categorizer.h
+	src/rule/IntervalRule.h
+	src/rule/LiteralRule.h
+	src/rule/OrRule.h
+	src/rule/Parser.h
+	src/rule/Rule.h
 	src/Exception.h
 )
 

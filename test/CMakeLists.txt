@@ -13,6 +13,13 @@ set(
 	Test_File.cpp
 	Test_ONEST.cpp
 	Test_Parser.cpp
+	Test_RuleCategorizer.cpp
+	Test_RuleIntervalRule.cpp
+	Test_RuleLiteralRule.cpp
+	Test_RuleOrRule.cpp
+	Test_RuleParserIntervalRule.cpp
+	Test_RuleParserOrRule.cpp
+	Test_RuleParserUtil.cpp
 )
 
 set(
@@ -21,6 +28,10 @@ set(
 	../src/calc/ONEST.cpp
 	../src/csv/Parser.cpp
 	../src/io/File.cpp
+	../src/rule/parser/ParseIntervalRule.cpp
+	../src/rule/parser/Util.cpp
+	../src/rule/Categorizer.cpp
+	../src/rule/Parser.cpp
 )
 
 set(
