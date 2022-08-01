@@ -20,6 +20,7 @@ set(
 	src/rule/parser/Util.cpp
 	src/rule/Categorizer.cpp
 	src/rule/Parser.cpp
+	src/git.cpp
 	src/main.cpp
 )
 
@@ -47,6 +48,7 @@ set(
 	src/rule/Parser.h
 	src/rule/Rule.h
 	src/Exception.h
+	src/git.h
 )
 
 add_executable(
@@ -74,3 +76,6 @@ set(BUILD_EXPERIMENTAL_OPENGL_BACKEND ON)
 add_subdirectory(ext/matplot++)
 target_include_directories(onest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ext/matplot++/source)
 target_link_libraries(onest matplot matplot_opengl)
+
+add_subdirectory(ext/git)
+target_link_libraries(onest cmake_git_version_tracking)

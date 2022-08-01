@@ -11,6 +11,7 @@
 #include "../csv/Parser.h"
 #include "../io/File.h"
 #include "../rule/Categorizer.h"
+#include "../git.h"
 
 
 using namespace onest::calc;
@@ -32,6 +33,8 @@ namespace onest::gui
 			sheet = csv::parseSheet(io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()), ';', '"');
 		}
 		fileOpenDialog->Destroy();
+
+		SetTitle("ONEST Pre-alpha    |  " + git::getVersionInfo());
 
 		CreateStatusBar();
 
