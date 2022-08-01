@@ -5,18 +5,22 @@
 namespace onest::rule
 {
 	Categorizer::Categorizer(std::string ruleString)
-		: myRuleString(move(ruleString))
-		, myRules(parseRuleString(myRuleString))
-	{}
+	{
+		const size_t sizeWithNull = ruleString.size() + 1;
+		pMyRuleString.reset(new char[sizeWithNull]);
+		memcpy(pMyRuleString.get(), ruleString.c_str(), sizeWithNull);
+
+		myRules = parseRuleString(pMyRuleString.get());
+	}
 
 	Categorizer::Result Categorizer::categorize(const std::string& value) const
 	{
-		for (const auto& rule : myRules)
+		for (size_t i = 0; i < myRules.size(); ++i)
 		{
-			if (rule->apply(value))
-				return { rule->getCategory(), true };
+			if (myRules[i]->apply(value))
+				return { myRules[i]->getCategory(), (unsigned)i, true };
 		}
 
-		return { "", false };
+		return { "", 0, false };
 	}
 }

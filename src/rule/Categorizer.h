@@ -15,6 +15,7 @@ namespace onest::rule
 		struct Result
 		{
 			std::string_view category;
+			unsigned matchedRuleIndex;
 			bool success;
 		};
 
@@ -24,8 +25,10 @@ namespace onest::rule
 
 		Result categorize(const std::string& value) const;
 
+		unsigned getNumberOfRules() const { return (unsigned)myRules.size(); }
+
 	private:
-		std::string myRuleString;
+		std::shared_ptr<char[]> pMyRuleString;
 		std::vector<std::shared_ptr<Rule>> myRules;
 	};
 }
