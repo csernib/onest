@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../calc/AssessmentMatrix.h"
-#include "../csv/Parser.h"
+#include "../calc/ONEST.h"
+#include "../csv/Sheet.h"
 
 #include <string>
 
@@ -33,9 +34,12 @@ namespace onest::gui
 		void createLayoutOnTheLeft();
 
 		void showLoadFileDialog();
+		void showSaveFileDialog();
 
 		void recalculateValues();
 		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors();
+
+		calc::ONEST myONEST;
 
 		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
 		wxBoxSizer* pMyLeftVerticalLayout = nullptr;

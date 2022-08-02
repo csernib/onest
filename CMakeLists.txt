@@ -11,6 +11,7 @@ set(
 	SOURCES
 	src/calc/CategoryFactory.cpp
 	src/calc/ONEST.cpp
+	src/csv/Exporter.cpp
 	src/csv/Parser.cpp
 	src/gui/Diagram.cpp
 	src/gui/MainFrame.cpp
@@ -30,6 +31,7 @@ set(
 	src/calc/Category.h
 	src/calc/CategoryFactory.h
 	src/calc/ONEST.h
+	src/csv/Exporter.h
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/csv/Sheet.h

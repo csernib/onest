@@ -28,4 +28,11 @@ namespace onest::io
 
 		return content;
 	}
+
+	void File::writeFile(const filesystem::path& path, const ios& stream)
+	{
+		ofstream file(path);
+		file.exceptions(ifstream::failbit | ifstream::badbit);
+		file << stream.rdbuf();
+	}
 }

@@ -2,15 +2,19 @@
 #include "Diagram.h"
 #include "Table.h"
 
-#include <wx/artprov.h>
-#include <wx/filedlg.h>
-#include <wx/toolbar.h>
-
 #include "../calc/CategoryFactory.h"
-#include "../calc/ONEST.h"
+#include "../csv/Exporter.h"
+#include "../csv/Parser.h"
 #include "../io/File.h"
 #include "../rule/Categorizer.h"
 #include "../git.h"
+
+#include <ranges>
+
+#include <wx/artprov.h>
+#include <wx/filedlg.h>
+#include <wx/msgdlg.h>
+#include <wx/toolbar.h>
 
 
 using namespace onest::calc;
@@ -44,6 +48,9 @@ namespace onest::gui
 
 		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN));
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showLoadFileDialog(); }, wxID_OPEN);
+
+		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE));
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
 
 		toolbar->Realize();
 	}
@@ -124,6 +131,9 @@ namespace onest::gui
 			createTable(sheet);
 			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
 
+			myONEST.clear();
+			myONEST.shrink_to_fit();
+
 			recalculateValues();
 			Refresh();
 			SendSizeEvent();
@@ -131,24 +141,50 @@ namespace onest::gui
 		fileOpenDialog->Destroy();
 	}
 
+	void MainFrame::showSaveFileDialog()
+	{
+		if (myONEST.empty())
+		{
+			wxMessageBox("Nothing is calculated yet, so there is nothing to save.", "Information", wxICON_INFORMATION | wxOK);
+			return;
+		}
+
+		wxFileDialog* fileSaveDialog = new wxFileDialog(this, _("Save..."), wxEmptyString, wxEmptyString, "CSV files (*.csv)|*.csv", wxFD_SAVE, wxDefaultPosition);
+		if (fileSaveDialog->ShowModal() == wxID_OK)
+		{
+			csv::Sheet sheet;
+			for (const OPAC& opac : myONEST)
+			{
+				csv::Row row;
+				ranges::copy(opac | views::transform([](number_t opa) { return to_string(opa); }), back_inserter(row));
+				sheet.push_back(move(row));
+			}
+
+			io::File::writeFile(fileSaveDialog->GetPath().ToStdString(), csv::exportCSV(sheet, ',', '"'));
+			fileSaveDialog->Destroy();
+		}
+	}
+
 	void MainFrame::recalculateValues()
 	{
 		SetStatusText("Calculating ONEST...");
+		myONEST.clear();
 		try
 		{
 			// TODO: Do it in a different thread!
 			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors();
-			const ONEST onest = calculateRandomPermutations(matrix, 100);
+			myONEST = calculateRandomPermutations(matrix, 100);
 
-			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(onest)));
-			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(onest)));
+			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(myONEST)));
+			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(myONEST)));
 
-			pMyDiagram->plotONEST(onest);
+			pMyDiagram->plotONEST(myONEST);
 
 			SetStatusText("Ready");
 		}
 		catch (const exception& ex)
 		{
+			myONEST.clear();
 			pMyOPANValue->SetLabelText(OPAN_TEXT + "N/A");
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + "N/A");
 			pMyDiagram->plotONEST(ONEST());
