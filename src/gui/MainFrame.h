@@ -1,10 +1,13 @@
 #pragma once
 
 #include "../calc/AssessmentMatrix.h"
+#include "../csv/Parser.h"
 
 #include <string>
 
+#include <wx/checkbox.h>
 #include <wx/frame.h>
+#include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
@@ -24,13 +27,24 @@ namespace onest::gui
 		MainFrame();
 
 	private:
+		void createMainLayoutSizers();
+		void createTable(const csv::Sheet& sheet);
+		void createLayoutOnTheLeft();
+
+		void showLoadFileDialog();
+
 		void recalculateValues();
 		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors();
 
-		Table* pMyTable;
-		Diagram* pMyDiagram;
-		wxStaticText* pMyOPANValue;
-		wxStaticText* pMyBandwidthValue;
-		wxTextCtrl* pMyCategorizerInputField;
+		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
+		wxBoxSizer* pMyLeftVerticalLayout = nullptr;
+
+		Table* pMyTable = nullptr;
+		Diagram* pMyDiagram = nullptr;
+
+		wxCheckBox* pMyHeaderCheckbox = nullptr;
+		wxStaticText* pMyOPANValue = nullptr;
+		wxStaticText* pMyBandwidthValue = nullptr;
+		wxTextCtrl* pMyCategorizerInputField = nullptr;
 	};
 }

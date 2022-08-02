@@ -2,13 +2,10 @@
 #include "Diagram.h"
 #include "Table.h"
 
-#include <wx/checkbox.h>
 #include <wx/filedlg.h>
-#include <wx/sizer.h>
 
 #include "../calc/CategoryFactory.h"
 #include "../calc/ONEST.h"
-#include "../csv/Parser.h"
 #include "../io/File.h"
 #include "../rule/Categorizer.h"
 #include "../git.h"
@@ -25,55 +22,45 @@ namespace onest::gui
 
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
 	{
-		csv::Sheet sheet;
-
-		wxFileDialog* fileOpenDialog = new wxFileDialog(this, _("Choose a file to open"), wxEmptyString, wxEmptyString, "CSV files (*.csv)|*.csv|All files|*", wxFD_OPEN, wxDefaultPosition);
-		if (fileOpenDialog->ShowModal() == wxID_OK)
-		{
-			sheet = csv::parseSheet(io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()), ';', '"');
-		}
-		fileOpenDialog->Destroy();
-
 		SetTitle("ONEST Pre-alpha    |  " + git::getVersionInfo());
 
 		CreateStatusBar();
 
-		wxBoxSizer* horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
+		createMainLayoutSizers();
+		createTable(csv::Sheet());
+		createLayoutOnTheLeft();
 
-		wxBoxSizer* verticalSizer = new wxBoxSizer(wxVERTICAL);
-		horizontalSizer->Add(verticalSizer, wxSizerFlags(1).Expand());
+		showLoadFileDialog();
 
-		pMyTable = new Table(this, sheet);
-		horizontalSizer->Add(pMyTable, wxSizerFlags(2).Expand());
+		recalculateValues();
+	}
 
-		Bind(wxEVT_SIZE, [this, verticalSizer](wxSizeEvent& e)
+	void MainFrame::createMainLayoutSizers()
+	{
+		pMyMainHorizontalLayout = new wxBoxSizer(wxHORIZONTAL);
+		SetSizer(pMyMainHorizontalLayout);
+
+		pMyLeftVerticalLayout = new wxBoxSizer(wxVERTICAL);
+		pMyMainHorizontalLayout->Add(pMyLeftVerticalLayout, wxSizerFlags(1).Expand());
+
+		Bind(wxEVT_SIZE, [this](wxSizeEvent& e)
 		{
 			auto size = GetClientSize();
-			verticalSizer->SetMinSize(size.x / 3, size.y);
+			pMyLeftVerticalLayout->SetMinSize(size.x / 3, size.y);
 			e.Skip();
 		});
+	}
 
-		wxCheckBox* headerCheckbox = new wxCheckBox(this, -1, "Header");
-		verticalSizer->Add(headerCheckbox);
-		headerCheckbox->SetValue(pMyTable->isFirstRowHeader());
-		headerCheckbox->Bind(wxEVT_CHECKBOX, [this](const wxCommandEvent& e)
-		{
-			pMyTable->setFirstRowAsHeader(e.IsChecked());
-			recalculateValues();
-		});
+	void MainFrame::createTable(const csv::Sheet& sheet)
+	{
+		if (pMyTable)
+			pMyTable->Destroy();
 
-		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
-		verticalSizer->Add(pMyOPANValue);
+		pMyTable = new Table(this, sheet);
+		pMyMainHorizontalLayout->Add(pMyTable, wxSizerFlags(2).Expand());
 
-		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
-		verticalSizer->Add(pMyBandwidthValue);
-
-		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
-		verticalSizer->Add(pMyCategorizerInputField);
-		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
-
-		pMyDiagram = new Diagram(this);
-		verticalSizer->Add(pMyDiagram, wxSizerFlags(1).Expand());
+		if (pMyHeaderCheckbox)
+			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
 
 		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
@@ -85,10 +72,44 @@ namespace onest::gui
 		{
 			recalculateValues();
 		});
+	}
 
-		SetSizer(horizontalSizer);
+	void MainFrame::createLayoutOnTheLeft()
+	{
+		pMyHeaderCheckbox = new wxCheckBox(this, -1, "Header");
+		pMyLeftVerticalLayout->Add(pMyHeaderCheckbox);
+		pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
+		pMyHeaderCheckbox->Bind(wxEVT_CHECKBOX, [this](const wxCommandEvent& e)
+		{
+			pMyTable->setFirstRowAsHeader(e.IsChecked());
+			recalculateValues();
+		});
 
-		recalculateValues();
+		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
+		pMyLeftVerticalLayout->Add(pMyOPANValue);
+
+		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
+		pMyLeftVerticalLayout->Add(pMyBandwidthValue);
+
+		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
+		pMyLeftVerticalLayout->Add(pMyCategorizerInputField);
+		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
+
+		pMyDiagram = new Diagram(this);
+		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
+	}
+
+	void MainFrame::showLoadFileDialog()
+	{
+		csv::Sheet sheet;
+		wxFileDialog* fileOpenDialog = new wxFileDialog(this, _("Choose a file to open"), wxEmptyString, wxEmptyString, "CSV files (*.csv)|*.csv|All files|*", wxFD_OPEN, wxDefaultPosition);
+		if (fileOpenDialog->ShowModal() == wxID_OK)
+		{
+			// TODO: Exception handling!
+			sheet = csv::parseSheet(io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()), ';', '"');
+			createTable(sheet);
+		}
+		fileOpenDialog->Destroy();
 	}
 
 	void MainFrame::recalculateValues()
