@@ -2,7 +2,9 @@
 #include "Diagram.h"
 #include "Table.h"
 
+#include <wx/artprov.h>
 #include <wx/filedlg.h>
+#include <wx/toolbar.h>
 
 #include "../calc/CategoryFactory.h"
 #include "../calc/ONEST.h"
@@ -26,6 +28,7 @@ namespace onest::gui
 
 		CreateStatusBar();
 
+		createToolbar();
 		createMainLayoutSizers();
 		createTable(csv::Sheet());
 		createLayoutOnTheLeft();
@@ -33,6 +36,16 @@ namespace onest::gui
 		showLoadFileDialog();
 
 		recalculateValues();
+	}
+
+	void MainFrame::createToolbar()
+	{
+		wxToolBar* toolbar = CreateToolBar();
+
+		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN));
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showLoadFileDialog(); }, wxID_OPEN);
+
+		toolbar->Realize();
 	}
 
 	void MainFrame::createMainLayoutSizers()
@@ -54,13 +67,13 @@ namespace onest::gui
 	void MainFrame::createTable(const csv::Sheet& sheet)
 	{
 		if (pMyTable)
+		{
+			pMyMainHorizontalLayout->Detach(pMyTable);
 			pMyTable->Destroy();
+		}
 
 		pMyTable = new Table(this, sheet);
 		pMyMainHorizontalLayout->Add(pMyTable, wxSizerFlags(2).Expand());
-
-		if (pMyHeaderCheckbox)
-			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
 
 		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
@@ -107,7 +120,13 @@ namespace onest::gui
 		{
 			// TODO: Exception handling!
 			sheet = csv::parseSheet(io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()), ';', '"');
+
 			createTable(sheet);
+			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
+
+			recalculateValues();
+			Refresh();
+			SendSizeEvent();
 		}
 		fileOpenDialog->Destroy();
 	}

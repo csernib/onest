@@ -27,6 +27,7 @@ namespace onest::gui
 		MainFrame();
 
 	private:
+		void createToolbar();
 		void createMainLayoutSizers();
 		void createTable(const csv::Sheet& sheet);
 		void createLayoutOnTheLeft();
