@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include "ParserException.h"
 
+#include <format>
 #include <regex>
 
 
@@ -10,8 +11,12 @@ namespace onest::csv
 {
 	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar)
 	{
-		static const regex csvRegex(R"__((?:"((?:[^"]|"")*)"|([^,"]*?))(?:(,)?(\r\n|\n|\r|$)|,))__", regex_constants::optimize);
-		static const regex quoteRegex("\"\"", regex_constants::optimize);
+		const regex csvRegex(
+			format(R"__((?:{1}((?:[^{1}]|{1}{1})*){1}|([^{0}{1}]*?))(?:({0})?(\r\n|\n|\r|$)|{0}))__", separator, quoteChar),
+			regex_constants::optimize
+		);
+		const regex quoteRegex(format("{0}{0}", quoteChar), regex_constants::optimize);
+		const string quoteString(&quoteChar, &quoteChar + 1);
 
 		Row row;
 		Sheet sheet;
@@ -23,7 +28,7 @@ namespace onest::csv
 			if (match.prefix().matched)
 				throw ParserException("Invalid CSV");
 
-			string sm1 = regex_replace(match[1].str(), quoteRegex, "\"");
+			string sm1 = regex_replace(match[1].str(), quoteRegex, quoteString);
 			string sm2 = match[2];
 			row.push_back(move(sm1) + move(sm2));
 

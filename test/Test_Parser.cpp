@@ -326,3 +326,22 @@ CASE(TAG "Mixing unquoted text after quoted value is disallowed.")
 	// When, then
 	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
+
+CASE(TAG "Splitting by semi-colon and different quote char also works.")
+{
+	// Given
+	string csv = "a;b;c,d\n\'e\nf''ghi';j";
+
+	// When
+	auto parsed = parseSheet(csv, ';', '\'');
+
+	// Then
+	EXPECT(parsed.size() == 2);
+	EXPECT(parsed[0].size() == 3);
+	EXPECT(parsed[1].size() == 2);
+	EXPECT(parsed[0][0] == "a");
+	EXPECT(parsed[0][1] == "b");
+	EXPECT(parsed[0][2] == "c,d");
+	EXPECT(parsed[1][0] == "e\nf'ghi");
+	EXPECT(parsed[1][1] == "j");
+}
