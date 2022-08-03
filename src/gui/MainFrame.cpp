@@ -122,11 +122,23 @@ namespace onest::gui
 	void MainFrame::showLoadFileDialog()
 	{
 		csv::Sheet sheet;
-		wxFileDialog* fileOpenDialog = new wxFileDialog(this, _("Choose a file to open"), wxEmptyString, wxEmptyString, "CSV files (*.csv)|*.csv|All files|*", wxFD_OPEN, wxDefaultPosition);
+		wxFileDialog* fileOpenDialog = new wxFileDialog(
+			this,
+			"Choose a file to open....",
+			wxEmptyString,
+			wxEmptyString,
+			"CSV files (comma-separated)|*.csv|CSV files (semicolon-separated)|*.csv",
+			wxFD_OPEN | wxFD_FILE_MUST_EXIST,
+			wxDefaultPosition
+		);
 		if (fileOpenDialog->ShowModal() == wxID_OK)
 		{
 			// TODO: Exception handling!
-			sheet = csv::parseSheet(io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()), ';', '"');
+			sheet = csv::parseSheet(
+				io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()),
+				fileOpenDialog->GetFilterIndex() == 0 ? ',' : ';',
+				'"'
+			);
 
 			createTable(sheet);
 			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
@@ -149,7 +161,15 @@ namespace onest::gui
 			return;
 		}
 
-		wxFileDialog* fileSaveDialog = new wxFileDialog(this, _("Save..."), wxEmptyString, wxEmptyString, "CSV files (*.csv)|*.csv", wxFD_SAVE, wxDefaultPosition);
+		wxFileDialog* fileSaveDialog = new wxFileDialog(
+			this,
+			"Save ONEST data...",
+			wxEmptyString,
+			wxEmptyString,
+			"CSV files (comma-separated)|*.csv|CSV files (semicolon-separated)|*.csv",
+			wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
+			wxDefaultPosition
+		);
 		if (fileSaveDialog->ShowModal() == wxID_OK)
 		{
 			csv::Sheet sheet;
@@ -160,7 +180,10 @@ namespace onest::gui
 				sheet.push_back(move(row));
 			}
 
-			io::File::writeFile(fileSaveDialog->GetPath().ToStdString(), csv::exportCSV(sheet, ',', '"'));
+			io::File::writeFile(
+				fileSaveDialog->GetPath().ToStdString(),
+				csv::exportCSV(sheet, fileSaveDialog->GetFilterIndex() == 0 ? ',' : ';', '"')
+			);
 			fileSaveDialog->Destroy();
 		}
 	}
