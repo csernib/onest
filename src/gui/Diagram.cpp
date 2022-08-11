@@ -31,10 +31,14 @@ namespace onest::gui
 
 	void Diagram::plotONEST(const calc::ONEST& onest)
 	{
-		// TODO: Also clear the plot in this case!
-		// TODO: There seems to be a crash with 2 observers!
-		if (onest.empty())
+		// There seems to be a crash with 2 observers, as Matplot++ does not handle the case where only
+		// a single point is given, so that plotting a line is not defined.
+		// TODO: It would be still nice to plot the point in this case ('onest[0].size() == 1' branch).
+		if (onest.empty() || onest[0].size() == 1)
+		{
+			clearDiagram();
 			return;
+		}
 
 		std::vector<int> observerCounts(onest[0].size());
 		std::ranges::generate(observerCounts, [i = 2]() mutable { return i++; });
@@ -58,6 +62,13 @@ namespace onest::gui
 			v = matplot::randn(100, 0.0, 1.0);
 		boxplot->boxplot(data);
 
+		Refresh();
+	}
+
+	void Diagram::clearDiagram()
+	{
+		pMyFigure->add_subplot(2, 1, 0, true);
+		pMyFigure->add_subplot(2, 1, 1, true);
 		Refresh();
 	}
 

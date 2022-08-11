@@ -20,6 +20,7 @@ namespace onest::gui
 		void plotONEST(const calc::ONEST& onest);
 
 	private:
+		void clearDiagram();
 		void render(wxPaintEvent& event);
 
 		std::unique_ptr<wxGLContext> pMyContext;
