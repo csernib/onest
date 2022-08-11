@@ -48,13 +48,18 @@ namespace onest::gui
 	{
 		wxToolBar* toolbar = CreateToolBar();
 
-		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN));
+		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN), "Open CSV input...");
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showLoadFileDialog(); }, wxID_OPEN);
 
-		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE));
+		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE), "Export ONEST output...");
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
 
-		toolbar->AddTool(wxID_REFRESH, "Randomize", wxBitmap::NewFromPNGData(rsc::dice, sizeof(rsc::dice)));
+		toolbar->AddTool(
+			wxID_REFRESH,
+			"Randomize",
+			wxBitmap::NewFromPNGData(rsc::dice, sizeof(rsc::dice)),
+			"Use non-deterministic random numbers for permutation selection"
+		);
 		toolbar->SetToggle(wxID_REFRESH, true);
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { recalculateValues(); }, wxID_REFRESH);
 
