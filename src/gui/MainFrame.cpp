@@ -39,7 +39,11 @@ namespace onest::gui
 		createTable(csv::Sheet());
 		createLayoutOnTheLeft();
 
-		showLoadFileDialog();
+		csv::Sheet emptySheet(100);
+		for (csv::Row& row : emptySheet)
+			row.resize(18);
+		createTable(emptySheet);
+		pMyTable->setFirstRowAsHeader(false);
 
 		recalculateValues();
 	}
