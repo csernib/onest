@@ -9,7 +9,7 @@ using namespace std;
 
 namespace onest::csv
 {
-	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar)
+	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar) try
 	{
 		const regex csvRegex(
 			format(R"__((?:{1}((?:[^{1}]|{1}{1})*){1}|([^{0}{1}]*?))(?:({0})?(\r\n|\n|\r|$)|{0}))__", separator, quoteChar),
@@ -26,7 +26,7 @@ namespace onest::csv
 			const smatch& match = *it;
 
 			if (match.prefix().matched)
-				throw ParserException("Invalid CSV");
+				throw ParserException("Could not load CSV: invalid syntax");
 
 			string sm1 = regex_replace(match[1].str(), quoteRegex, quoteString);
 			string sm2 = match[2];
@@ -44,8 +44,20 @@ namespace onest::csv
 		}
 
 		if (!matched && !csvData.empty())
-			throw ParserException("Invalid CSV");
+			throw ParserException("Could not load CSV: invalid syntax");
 
 		return sheet;
+	}
+	catch (const ParserException&)
+	{
+		throw;
+	}
+	catch (const exception& ex)
+	{
+		throw ParserException("Could not load CSV: "s + ex.what());
+	}
+	catch (...)
+	{
+		throw ParserException("Could not load CSV.");
 	}
 }
