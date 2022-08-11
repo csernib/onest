@@ -3,7 +3,6 @@
 #include "../Exception.h"
 
 #include <algorithm>
-#include <random>
 #include <set>
 
 
@@ -104,7 +103,7 @@ namespace onest::calc
 		return calculateONEST(matrix, move(allPermutations));
 	}
 
-	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations)
+	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations, mt19937_64 rng)
 	{
 		if (numberOfPermutations == 0)
 			return ONEST();
@@ -114,7 +113,6 @@ namespace onest::calc
 
 		set<ObserverPermutation> randomPermutations;
 
-		mt19937_64 rng;
 		ObserverPermutation permutation = generateFirstPermutation(matrix.getTotalNumberOfObservers());
 		for (unsigned i = 0; i < numberOfPermutations; ++i)
 		{

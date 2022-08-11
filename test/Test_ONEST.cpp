@@ -90,7 +90,7 @@ CASE(TAG "ONEST for random permutations contains the correct OPACs.")
 	vector<OPAC> expectedOPACs = generateExpectedOPACs();
 
 	// When
-	const ONEST onest = calculateRandomPermutations(matrix, 2);
+	const ONEST onest = calculateRandomPermutations(matrix, 2, mt19937_64());
 
 	// Then
 	EXPECT(onest.size() == 2);
@@ -104,7 +104,7 @@ CASE(TAG "ONEST for 0 random permutations returns empty container.")
 	const AssessmentMatrix matrix = generateTestMatrix();
 
 	// When
-	const ONEST onest = calculateRandomPermutations(matrix, 0);
+	const ONEST onest = calculateRandomPermutations(matrix, 0, mt19937_64());
 
 	// Then
 	EXPECT(onest.empty());

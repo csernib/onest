@@ -16,6 +16,8 @@
 #include <wx/msgdlg.h>
 #include <wx/toolbar.h>
 
+#include "rsc/dice.h"
+
 
 using namespace onest::calc;
 using namespace onest::rule;
@@ -51,6 +53,10 @@ namespace onest::gui
 
 		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE));
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
+
+		toolbar->AddTool(wxID_REFRESH, "Randomize", wxBitmap::NewFromPNGData(rsc::dice, sizeof(rsc::dice)));
+		toolbar->SetToggle(wxID_REFRESH, true);
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { recalculateValues(); }, wxID_REFRESH);
 
 		toolbar->Realize();
 	}
@@ -194,9 +200,16 @@ namespace onest::gui
 		myONEST.clear();
 		try
 		{
+			auto randomizeSeedButton = GetToolBar()->FindById(wxID_REFRESH);
+			assert(randomizeSeedButton && "This should always exist.");
+
 			// TODO: Do it in a different thread!
 			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors();
-			myONEST = calculateRandomPermutations(matrix, 100);
+			myONEST = calculateRandomPermutations(
+				matrix,
+				100,
+				randomizeSeedButton->IsToggled() ? mt19937_64(random_device()()) : mt19937_64()
+			);
 
 			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(myONEST)));
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(myONEST)));
