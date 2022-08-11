@@ -138,7 +138,7 @@ namespace onest::gui
 			"Choose a file to open....",
 			wxEmptyString,
 			wxEmptyString,
-			"CSV files (comma-separated)|*.csv|CSV files (semicolon-separated)|*.csv",
+			"CSV files (semicolon-separated)|*.csv|CSV files (comma-separated)|*.csv",
 			wxFD_OPEN | wxFD_FILE_MUST_EXIST,
 			wxDefaultPosition
 		);
@@ -147,7 +147,7 @@ namespace onest::gui
 			// TODO: Exception handling!
 			sheet = csv::parseSheet(
 				io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()),
-				fileOpenDialog->GetFilterIndex() == 0 ? ',' : ';',
+				fileOpenDialog->GetFilterIndex() == 0 ? ';' : ',',
 				'"'
 			);
 
@@ -177,7 +177,7 @@ namespace onest::gui
 			"Save ONEST data...",
 			wxEmptyString,
 			wxEmptyString,
-			"CSV files (comma-separated)|*.csv|CSV files (semicolon-separated)|*.csv",
+			"CSV files (semicolon-separated)|*.csv|CSV files (comma-separated)|*.csv",
 			wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
 			wxDefaultPosition
 		);
@@ -193,7 +193,7 @@ namespace onest::gui
 
 			io::File::writeFile(
 				fileSaveDialog->GetPath().ToStdString(),
-				csv::exportCSV(sheet, fileSaveDialog->GetFilterIndex() == 0 ? ',' : ';', '"')
+				csv::exportCSV(sheet, fileSaveDialog->GetFilterIndex() == 0 ? ';' : ',', '"')
 			);
 			fileSaveDialog->Destroy();
 		}
