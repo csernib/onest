@@ -36,6 +36,7 @@ set(
 	src/csv/ParserException.h
 	src/csv/Sheet.h
 	src/gui/rsc/dice.h
+	src/gui/rsc/header_toggle.h
 	src/gui/Diagram.h
 	src/gui/MainFrame.h
 	src/gui/Table.h

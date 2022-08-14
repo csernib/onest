@@ -17,6 +17,7 @@
 #include <wx/toolbar.h>
 
 #include "rsc/dice.h"
+#include "rsc/header_toggle.h"
 
 
 using namespace onest::calc;
@@ -27,6 +28,12 @@ namespace onest::gui
 {
 	const string MainFrame::OPAN_TEXT = "OPA(N): ";
 	const string MainFrame::BANDWIDTH_TEXT = "Bandwidth: ";
+
+	enum
+	{
+		TOOLBAR_DICE_BUTTON = wxID_HIGHEST + 1,
+		TOOLBAR_HEADER_BUTTON
+	};
 
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
 	{
@@ -59,13 +66,26 @@ namespace onest::gui
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
 
 		auto diceButton = toolbar->AddTool(
-			wxID_REFRESH,
+			TOOLBAR_DICE_BUTTON,
 			"Randomize",
 			wxBitmap::NewFromPNGData(rsc::dice, sizeof(rsc::dice)),
 			"Use non-deterministic random numbers for permutation selection"
 		);
 		diceButton->SetToggle(true);
-		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { recalculateValues(); }, wxID_REFRESH);
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { recalculateValues(); }, TOOLBAR_DICE_BUTTON);
+
+		auto headerButton = toolbar->AddTool(
+			TOOLBAR_HEADER_BUTTON,
+			"Toggle header",
+			wxBitmap::NewFromPNGData(rsc::header_toggle, sizeof(rsc::header_toggle)),
+			"Is the first row a header?"
+		);
+		headerButton->SetToggle(true);
+		toolbar->Bind(
+			wxEVT_MENU,
+			[this, headerButton](wxEvent&) { pMyTable->setFirstRowAsHeader(headerButton->IsToggled()); recalculateValues(); },
+			TOOLBAR_HEADER_BUTTON
+		);
 
 		toolbar->Realize();
 	}
@@ -111,15 +131,6 @@ namespace onest::gui
 
 	void MainFrame::createLayoutOnTheLeft()
 	{
-		pMyHeaderCheckbox = new wxCheckBox(this, -1, "Header");
-		pMyLeftVerticalLayout->Add(pMyHeaderCheckbox);
-		pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
-		pMyHeaderCheckbox->Bind(wxEVT_CHECKBOX, [this](const wxCommandEvent& e)
-		{
-			pMyTable->setFirstRowAsHeader(e.IsChecked());
-			recalculateValues();
-		});
-
 		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
 		pMyLeftVerticalLayout->Add(pMyOPANValue);
 
@@ -156,7 +167,8 @@ namespace onest::gui
 			);
 
 			createTable(sheet);
-			pMyHeaderCheckbox->SetValue(pMyTable->isFirstRowHeader());
+
+			GetToolBar()->ToggleTool(TOOLBAR_HEADER_BUTTON, pMyTable->isFirstRowHeader());
 
 			myONEST.clear();
 			myONEST.shrink_to_fit();
@@ -209,7 +221,7 @@ namespace onest::gui
 		myONEST.clear();
 		try
 		{
-			auto randomizeSeedButton = GetToolBar()->FindById(wxID_REFRESH);
+			auto randomizeSeedButton = GetToolBar()->FindById(TOOLBAR_DICE_BUTTON);
 			assert(randomizeSeedButton && "This should always exist.");
 
 			// TODO: Do it in a different thread!

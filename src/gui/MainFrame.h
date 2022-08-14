@@ -47,7 +47,6 @@ namespace onest::gui
 		Table* pMyTable = nullptr;
 		Diagram* pMyDiagram = nullptr;
 
-		wxCheckBox* pMyHeaderCheckbox = nullptr;
 		wxStaticText* pMyOPANValue = nullptr;
 		wxStaticText* pMyBandwidthValue = nullptr;
 		wxTextCtrl* pMyCategorizerInputField = nullptr;
