@@ -4,9 +4,6 @@
 [submodule "wx-widgets"]
 	path = ext/wx-widgets
 	url = https://github.com/wxWidgets/wxWidgets.git
-[submodule "glfw"]
-	path = ext/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "git"]
 	path = ext/git
 	url = https://github.com/andrew-hardin/cmake-git-version-tracking.git
