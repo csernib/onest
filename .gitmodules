@@ -4,9 +4,6 @@
 [submodule "wx-widgets"]
 	path = ext/wx-widgets
 	url = https://github.com/wxWidgets/wxWidgets.git
-[submodule "matplot++"]
-	path = ext/matplot++
-	url = https://github.com/csernib/matplotplusplus.git
 [submodule "glfw"]
 	path = ext/glfw
 	url = https://github.com/glfw/glfw.git
