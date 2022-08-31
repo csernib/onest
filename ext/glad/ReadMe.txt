@@ -1,1 +1,0 @@
-Generated at https://glad.dav1d.de/ for OpenGL 3.3 Core.
