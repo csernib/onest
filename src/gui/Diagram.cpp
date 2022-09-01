@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <format>
 #include <vector>
 
 
@@ -44,13 +45,12 @@ namespace onest::gui
 		wxBufferedPaintDC dc(this);
 		dc.Clear();
 
-		const int borderWidth = 20;
-		const wxPoint topLeft = { borderWidth, borderWidth };
-		const wxPoint bottomRight = { GetSize().x - borderWidth, GetSize().y / 2 - borderWidth };	// TODO: We should probably do this on a window basis via sizers from the main frame.
+		const auto [topLeft, bottomRight] = calculateTopLeftAndBottomRight(dc);
 
-		// We need to add 3 instead of 2 when calculating the height due to a bug.
-		// TODO: Recheck this on other platforms. On Windows, adding only 2 causes zero OPAs to overlap with the border.
-		dc.DrawRectangle(topLeft.x - 1, topLeft.y - 1, bottomRight.x - topLeft.x + 2, bottomRight.y - topLeft.y + 3);
+		if (topLeft.x >= bottomRight.x || topLeft.y >= bottomRight.y)
+			return;
+
+		drawBackgroundAndBorders(dc, topLeft, bottomRight);
 
 		if (myONEST.empty() || myONEST[0].empty())
 			return;
@@ -58,6 +58,86 @@ namespace onest::gui
 		const double scaleFactorX = static_cast<double>(bottomRight.x - topLeft.x) / (myONEST[0].size() - 1);
 		const double scaleFactorY = static_cast<double>(bottomRight.y - topLeft.y);
 
+		drawVerticalGridLines(dc, topLeft, bottomRight, scaleFactorX);
+		drawObserverIndexes(dc, topLeft, bottomRight, scaleFactorX);
+		drawOPAAxisText(dc, topLeft, bottomRight);
+		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
+	}
+
+	std::pair<wxPoint, wxPoint> Diagram::calculateTopLeftAndBottomRight(wxBufferedPaintDC& dc) const
+	{
+		const int borderWidthBasis  = 20;
+
+		// TODO: Instead get a sequence of the texts already (to be used for rendering too),
+		//       and calculate max extent based on that.
+		const int borderWidthLeft   = borderWidthBasis + dc.GetTextExtent("0.5").x + 2;
+		const int borderWidthRight  = borderWidthBasis;
+		const int borderWidthTop    = borderWidthBasis;
+		const int borderWidthBottom = borderWidthBasis + dc.GetTextExtent("0").y + 2;
+
+		const wxPoint topLeft = { borderWidthLeft, borderWidthTop };
+		const wxPoint bottomRight = { GetSize().x - borderWidthRight, GetSize().y / 2 - borderWidthBottom };	// TODO: We should probably do this on a window basis via sizers from the main frame.
+
+		return { topLeft, bottomRight };
+	}
+
+	void Diagram::drawBackgroundAndBorders(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight) const
+	{
+		// We need to add 3 instead of 2 when calculating the height due to a bug.
+		// TODO: Recheck this on other platforms. On Windows, adding only 2 causes zero OPAs to overlap with the border.
+		dc.DrawRectangle(topLeft.x - 1, topLeft.y - 1, bottomRight.x - topLeft.x + 2, bottomRight.y - topLeft.y + 3);
+	}
+
+	void Diagram::drawVerticalGridLines(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
+	{
+		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
+		for (size_t i = 1; i < myONEST[0].size() - 1; ++i)
+		{
+			const int x = topLeft.x + roundToInt(i * scaleFactorX);
+			dc.DrawLine(x, topLeft.y, x, bottomRight.y);
+		}
+	}
+
+	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
+	{
+		if (myONEST[0].size() >= 2)
+		{
+			// TODO: Only draw text at every Nth column if it would not fit!
+			const int y = bottomRight.y + 2;
+			for (size_t i = 0; i < myONEST[0].size(); ++i)
+			{
+				const int x = topLeft.x + roundToInt(i * scaleFactorX);
+
+				const wxString observerCount = std::to_string(i + 2);
+				const wxSize extent = dc.GetTextExtent(observerCount);
+				dc.DrawText(observerCount, x - roundToInt(extent.x / 2.0), y);
+			}
+		}
+	}
+
+	void Diagram::drawOPAAxisText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight) const
+	{
+		// TODO: Either pass this in here as well or have it calculated for the others too.
+		const double scaleFactorY = static_cast<double>(bottomRight.y - topLeft.y);
+
+		auto drawAtInterval = [&](int max, int i)
+		{
+			const std::string text = std::format("{:.2f}", 1.0 / (max - 1) * (max - i - 1));
+			const wxSize extent = dc.GetTextExtent(text);
+
+			const int x = topLeft.x - extent.x - 2;
+			const int y = topLeft.y + roundToInt(scaleFactorY / (max - 1) * i - extent.y / 2.0);
+
+			dc.DrawText(text, x, y);
+		};
+
+		const int max = 3;
+		for (int i = 0; i < max; ++i)
+			drawAtInterval(max, i);
+	}
+
+	void Diagram::drawONESTPlot(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const
+	{
 		for (size_t i = 0; i < myONEST.size(); ++i)
 		{
 			const calc::OPAC& opac = myONEST[i];
