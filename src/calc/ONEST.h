@@ -16,5 +16,6 @@ namespace onest::calc
 
 	number_t calculateOPAN(const ONEST& onest);
 	number_t calculateBandwidth(const ONEST& onest);
+	std::pair<number_t, number_t> calculateBandwidthMinMax(const ONEST& onest);
 	unsigned calculateNumOfObserversNeeded(const ONEST& onest);
 }

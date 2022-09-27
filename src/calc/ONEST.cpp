@@ -137,7 +137,7 @@ namespace onest::calc
 		return anyOPAC[anyOPAC.size() - 1];
 	}
 
-	number_t calculateBandwidth(const ONEST& onest)
+	pair<number_t, number_t> calculateBandwidthMinMax(const ONEST& onest)
 	{
 		if (onest.empty())
 			throw Exception("Bandwidth is undefined for empty ONEST.");
@@ -152,6 +152,12 @@ namespace onest::calc
 				max = opac[0];
 		}
 
+		return { min, max };
+	}
+
+	number_t calculateBandwidth(const ONEST& onest)
+	{
+		auto [min, max] = calculateBandwidthMinMax(onest);
 		return max - min;
 	}
 }

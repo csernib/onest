@@ -59,6 +59,7 @@ namespace onest::gui
 		const double scaleFactorY = static_cast<double>(bottomRight.y - topLeft.y);
 
 		drawVerticalGridLines(dc, topLeft, bottomRight, scaleFactorX);
+		drawHorizontalGridLines(dc, topLeft, bottomRight, scaleFactorY);
 		drawObserverIndexes(dc, topLeft, bottomRight, scaleFactorX);
 		drawOPAAxisText(dc, topLeft, bottomRight);
 		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
@@ -96,6 +97,21 @@ namespace onest::gui
 			const int x = topLeft.x + roundToInt(i * scaleFactorX);
 			dc.DrawLine(x, topLeft.y, x, bottomRight.y);
 		}
+	}
+
+	void Diagram::drawHorizontalGridLines(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
+	{
+		auto draw = [&](calc::number_t opaValue)
+		{
+			const int y = topLeft.y + roundToInt(scaleFactorY - opaValue * scaleFactorY);
+			dc.DrawLine(topLeft.x, y, bottomRight.x, y);
+		};
+
+		auto [bandwidthMin, bandwidthMax] = calc::calculateBandwidthMinMax(myONEST);
+		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
+
+		draw(bandwidthMin);
+		draw(bandwidthMax);
 	}
 
 	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
