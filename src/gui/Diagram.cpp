@@ -59,9 +59,8 @@ namespace onest::gui
 		const double scaleFactorY = static_cast<double>(bottomRight.y - topLeft.y);
 
 		drawVerticalGridLines(dc, topLeft, bottomRight, scaleFactorX);
-		drawHorizontalGridLines(dc, topLeft, bottomRight, scaleFactorY);
+		drawOPAGridLinesAndText(dc, topLeft, bottomRight, scaleFactorY);
 		drawObserverIndexes(dc, topLeft, bottomRight, scaleFactorX);
-		drawOPAAxisText(dc, topLeft, bottomRight);
 		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
 	}
 
@@ -99,19 +98,26 @@ namespace onest::gui
 		}
 	}
 
-	void Diagram::drawHorizontalGridLines(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
+	void Diagram::drawOPAGridLinesAndText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
 	{
-		auto draw = [&](calc::number_t opaValue)
+		auto draw = [&](calc::number_t opaValue, bool gridLine)
 		{
 			const int y = topLeft.y + roundToInt(scaleFactorY - opaValue * scaleFactorY);
-			dc.DrawLine(topLeft.x, y, bottomRight.x, y);
+			if (gridLine)
+				dc.DrawLine(topLeft.x, y, bottomRight.x, y);
+
+			const std::string text = std::format("{:.2f}", opaValue);
+			const wxSize extent = dc.GetTextExtent(text);
+			dc.DrawText(text, topLeft.x - extent.x - 2, y - roundToInt(extent.y / 2.0));
 		};
 
 		auto [bandwidthMin, bandwidthMax] = calc::calculateBandwidthMinMax(myONEST);
 		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
 
-		draw(bandwidthMin);
-		draw(bandwidthMax);
+		draw(1.0, false);
+		draw(0.0, false);
+		draw(bandwidthMin, true);
+		draw(bandwidthMax, true);
 	}
 
 	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
@@ -129,27 +135,6 @@ namespace onest::gui
 				dc.DrawText(observerCount, x - roundToInt(extent.x / 2.0), y);
 			}
 		}
-	}
-
-	void Diagram::drawOPAAxisText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight) const
-	{
-		// TODO: Either pass this in here as well or have it calculated for the others too.
-		const double scaleFactorY = static_cast<double>(bottomRight.y - topLeft.y);
-
-		auto drawAtInterval = [&](int max, int i)
-		{
-			const std::string text = std::format("{:.2f}", 1.0 / (max - 1) * (max - i - 1));
-			const wxSize extent = dc.GetTextExtent(text);
-
-			const int x = topLeft.x - extent.x - 2;
-			const int y = topLeft.y + roundToInt(scaleFactorY / (max - 1) * i - extent.y / 2.0);
-
-			dc.DrawText(text, x, y);
-		};
-
-		const int max = 3;
-		for (int i = 0; i < max; ++i)
-			drawAtInterval(max, i);
 	}
 
 	void Diagram::drawONESTPlot(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const
