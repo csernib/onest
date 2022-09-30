@@ -174,14 +174,17 @@ namespace onest::calc
 			minOPAC.push_back(min);
 		}
 
-		if (minOPAC[0] == 1.0)
+		if (minOPAC[minOPAC.size() - 1] == 1.0)
 			return { ObserversNeeded::CONVERGED_AND_DEFINED, 1, minOPAC[0] };
+
+		if (minOPAC.size() == 1 && minOPAC[0] == 0.0)
+			return { ObserversNeeded::DIVERGED, 2, minOPAC[0] };
 
 		unsigned firstIndex = -1;
 		for (unsigned i = 1; i < (unsigned)minOPAC.size(); ++i)
 		{
 			if (minOPAC[i] == 0.0)
-				return { ObserversNeeded::DIVERGED, i + 1, minOPAC[i] };
+				return { ObserversNeeded::DIVERGED, i + 2, minOPAC[i] };
 
 			if (minOPAC[i] >= minOPAC[i - 1])
 			{

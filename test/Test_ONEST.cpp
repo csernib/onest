@@ -153,3 +153,122 @@ CASE(TAG "Attempting to calculate bandwidth from empty ONEST throws.")
 	// When, then
 	EXPECT_THROWS_AS(calculateBandwidth(emptyONEST), Exception);
 }
+
+CASE(TAG "If ONEST is a constant line at 1.0, the number of observers needed is one.")
+{
+	// Given
+	const ONEST onest = { { 1.0, 1.0, 1.0, 1.0, 1.0 } };
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::CONVERGED_AND_DEFINED);
+	EXPECT(observersNeeded.numOfObservers == 1);
+	EXPECT(observersNeeded.opaValue == 1.0);
+}
+
+CASE(TAG "If there are two observers and they are in complete agreement, then the number of observers needed is just one.")
+{
+	// Given
+	const ONEST onest = { { 1.0 } };
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::CONVERGED_AND_DEFINED);
+	EXPECT(observersNeeded.numOfObservers == 1);
+	EXPECT(observersNeeded.opaValue == 1.0);
+}
+
+CASE(TAG "If there are two observers, but they are not in complete agreeent, then the number of observers needed cannot be reliably calculated.")
+{
+	// Given
+	const ONEST onest = { { 0.99 } };
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::CONVERGED_BUT_UNKNOWN);
+	EXPECT(observersNeeded.numOfObservers == 2);
+	EXPECT(observersNeeded.opaValue == 0.99);
+}
+
+CASE(TAG "If there are two observers and they are in complete disagreement, then the result is divergent.")
+{
+	// Given
+	const ONEST onest = { { 0.0 } };
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::DIVERGED);
+	EXPECT(observersNeeded.numOfObservers == 2);
+	EXPECT(observersNeeded.opaValue == 0.0);
+}
+
+CASE(TAG "Even if the minimum OPAC decreases further after reaching an initial plateau, the number of observers needed is still calculated correctly.")
+{
+	// Given
+	const ONEST onest =
+	{
+		{ 1.0, 0.9, 0.8, 0.7, 0.6, 0.5 },
+		{ 1.0, 0.7, 0.7, 0.7, 0.5, 0.5 }
+	};
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::CONVERGED_AND_DEFINED);
+	EXPECT(observersNeeded.numOfObservers == 6);
+	EXPECT(observersNeeded.opaValue == 0.5);
+}
+
+CASE(TAG "If the minimum OPAC reaches 0.0, the result is divergent, thus the number of observers needed cannot be calculated.")
+{
+	// Given
+	const ONEST onest =
+	{
+		{ 1.0, 0.9, 0.8, 0.7 },
+		{ 0.9, 0.8, 0.0, 0.0 }
+	};
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::DIVERGED);
+	EXPECT(observersNeeded.numOfObservers == 4);
+	EXPECT(observersNeeded.opaValue == 0.0);
+}
+
+CASE(TAG "If the minimum OPAC does not reach a plateau, there is not enough data to reliably calculate the number of observers needed.")
+{
+	// Given
+	const ONEST onest =
+	{
+		{ 1.0, 0.9, 0.8, 0.8, 0.8, 0.7 },
+		{ 1.0, 0.9, 0.9, 0.9, 0.9, 0.7 }
+	};
+
+	// When
+	const ObserversNeeded observersNeeded = calculateObserversNeeded(onest);
+
+	// Then
+	EXPECT(observersNeeded.result == ObserversNeeded::CONVERGED_BUT_UNKNOWN);
+	EXPECT(observersNeeded.numOfObservers == 7);
+	EXPECT(observersNeeded.opaValue == 0.7);
+}
+
+CASE(TAG "Attempting to calculate observers needed from empty ONEST throws.")
+{
+	// Given
+	const ONEST emptyONEST;
+
+	// When, then
+	EXPECT_THROWS_AS(calculateObserversNeeded(emptyONEST), Exception);
+}
