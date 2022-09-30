@@ -28,6 +28,8 @@ namespace onest::gui
 {
 	const string MainFrame::OPAN_TEXT = "OPA(N): ";
 	const string MainFrame::BANDWIDTH_TEXT = "Bandwidth: ";
+	const string MainFrame::OBSERVERS_NEEDED_TEXT = "Observers needed: ";
+	const string MainFrame::UNDEFINED_VALUE_TEXT = "N/A";
 
 	enum
 	{
@@ -131,11 +133,14 @@ namespace onest::gui
 
 	void MainFrame::createLayoutOnTheLeft()
 	{
-		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + "N/A");
+		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyOPANValue);
 
-		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + "N/A");
+		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyBandwidthValue);
+
+		pMyObserversNeededValue = new wxStaticText(this, -1, OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
+		pMyLeftVerticalLayout->Add(pMyObserversNeededValue);
 
 		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
 		pMyLeftVerticalLayout->Add(pMyCategorizerInputField);
@@ -235,6 +240,24 @@ namespace onest::gui
 			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(myONEST)));
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(myONEST)));
 
+			const ObserversNeeded observersNeeded = calculateObserversNeeded(myONEST);
+			wstring observersNeededText;
+			switch (observersNeeded.result)
+			{
+			case ObserversNeeded::CONVERGED_AND_DEFINED:
+				observersNeededText = to_wstring(observersNeeded.numOfObservers);
+				break;
+
+			case ObserversNeeded::CONVERGED_BUT_UNKNOWN:
+				observersNeededText = L"?";
+				break;
+
+			case ObserversNeeded::DIVERGED:
+				observersNeededText = L"\u221E";    // infinity sign
+				break;
+			}
+			pMyObserversNeededValue->SetLabelText(OBSERVERS_NEEDED_TEXT + observersNeededText);
+
 			pMyDiagram->plotONEST(myONEST);
 
 			SetStatusText("Ready");
@@ -242,8 +265,8 @@ namespace onest::gui
 		catch (const exception& ex)
 		{
 			myONEST.clear();
-			pMyOPANValue->SetLabelText(OPAN_TEXT + "N/A");
-			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + "N/A");
+			pMyOPANValue->SetLabelText(OPAN_TEXT + UNDEFINED_VALUE_TEXT);
+			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
 			pMyDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
 		}

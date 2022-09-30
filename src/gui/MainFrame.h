@@ -23,6 +23,8 @@ namespace onest::gui
 	private:
 		static const std::string OPAN_TEXT;
 		static const std::string BANDWIDTH_TEXT;
+		static const std::string OBSERVERS_NEEDED_TEXT;
+		static const std::string UNDEFINED_VALUE_TEXT;
 
 	public:
 		MainFrame();
@@ -49,6 +51,7 @@ namespace onest::gui
 
 		wxStaticText* pMyOPANValue = nullptr;
 		wxStaticText* pMyBandwidthValue = nullptr;
+		wxStaticText* pMyObserversNeededValue = nullptr;
 		wxTextCtrl* pMyCategorizerInputField = nullptr;
 	};
 }

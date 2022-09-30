@@ -155,6 +155,51 @@ namespace onest::calc
 		return { min, max };
 	}
 
+	// TODO: epsilon parameter
+	ObserversNeeded calculateObserversNeeded(const ONEST& onest)
+	{
+		if (onest.empty())
+			throw Exception("Number of observers needed is undefined for empty ONEST.");
+
+		OPAC minOPAC;
+		for (size_t i = 0; i < onest[0].size(); ++i)
+		{
+			number_t min = 1.0;
+			for (size_t j = 0; j < onest.size(); ++j)
+			{
+				if (onest[j][i] < min)
+					min = onest[j][i];
+			}
+
+			minOPAC.push_back(min);
+		}
+
+		if (minOPAC[0] == 1.0)
+			return { ObserversNeeded::CONVERGED_AND_DEFINED, 1, minOPAC[0] };
+
+		unsigned firstIndex = -1;
+		for (unsigned i = 1; i < (unsigned)minOPAC.size(); ++i)
+		{
+			if (minOPAC[i] == 0.0)
+				return { ObserversNeeded::DIVERGED, i + 1, minOPAC[i] };
+
+			if (minOPAC[i] >= minOPAC[i - 1])
+			{
+				if (firstIndex == -1)
+					firstIndex = i;
+			}
+			else
+			{
+				firstIndex = -1;
+			}
+		}
+
+		if (firstIndex != -1)
+			return { ObserversNeeded::CONVERGED_AND_DEFINED, firstIndex + 1, minOPAC[firstIndex - 1] };
+
+		return { ObserversNeeded::CONVERGED_BUT_UNKNOWN, (unsigned)minOPAC.size() + 1, minOPAC[minOPAC.size() - 1] };
+	}
+
 	number_t calculateBandwidth(const ONEST& onest)
 	{
 		auto [min, max] = calculateBandwidthMinMax(onest);
