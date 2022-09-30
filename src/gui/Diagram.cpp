@@ -111,13 +111,18 @@ namespace onest::gui
 			dc.DrawText(text, topLeft.x - extent.x - 2, y - roundToInt(extent.y / 2.0));
 		};
 
-		auto [bandwidthMin, bandwidthMax] = calc::calculateBandwidthMinMax(myONEST);
 		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
+
+		const auto [bandwidthMin, bandwidthMax] = calc::calculateBandwidthMinMax(myONEST);
+		const calc::ObserversNeeded observersNeeded = calc::calculateObserversNeeded(myONEST);
 
 		draw(1.0, false);
 		draw(0.0, false);
 		draw(bandwidthMin, true);
 		draw(bandwidthMax, true);
+
+		if (observersNeeded.result != calc::ObserversNeeded::DIVERGED)
+			draw(observersNeeded.opaValue, true);
 	}
 
 	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
