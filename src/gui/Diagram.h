@@ -17,18 +17,20 @@ namespace onest::gui
 		explicit Diagram(wxWindow* parent);
 
 		void plotONEST(calc::ONEST onest);
+		wxBitmap renderToBitmap();
 
 	private:
 		void clearDiagram();
-		void render(wxPaintEvent& event);
+		void handlePaintEvent(wxPaintEvent& event);
+		void render(wxDC& dc, wxPoint topLeft, wxPoint bottomRight);
 
-		std::pair<wxPoint, wxPoint> calculateTopLeftAndBottomRight(wxBufferedPaintDC& dc) const;
+		std::pair<wxPoint, wxPoint> calculateTopLeftAndBottomRight(wxDC& dc) const;
 
-		void drawBackgroundAndBorders(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight) const;
-		void drawVerticalGridLines(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const;
-		void drawOPAGridLinesAndText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const;
-		void drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const;
-		void drawONESTPlot(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const;
+		void drawBackgroundAndBorders(wxDC& dc, wxPoint topLeft, wxPoint bottomRight) const;
+		void drawVerticalGridLines(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const;
+		void drawOPAGridLinesAndText(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const;
+		void drawObserverIndexes(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const;
+		void drawONESTPlot(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const;
 
 		calc::ONEST myONEST;
 	};

@@ -33,7 +33,8 @@ namespace onest::gui
 
 	enum
 	{
-		TOOLBAR_DICE_BUTTON = wxID_HIGHEST + 1,
+		TOOLBAR_PLOT_SAVE_BUTTON = wxID_HIGHEST + 1,
+		TOOLBAR_DICE_BUTTON,
 		TOOLBAR_HEADER_BUTTON
 	};
 
@@ -66,6 +67,9 @@ namespace onest::gui
 
 		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE), "Export ONEST output...");
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
+
+		toolbar->AddTool(TOOLBAR_PLOT_SAVE_BUTTON, "Save plot", wxArtProvider::GetBitmap(wxART_FILE_SAVE_AS), "Save ONEST plot...");
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showPlotSaveDialog(); }, TOOLBAR_PLOT_SAVE_BUTTON);
 
 		auto diceButton = toolbar->AddTool(
 			TOOLBAR_DICE_BUTTON,
@@ -216,8 +220,32 @@ namespace onest::gui
 				fileSaveDialog->GetPath().ToStdString(),
 				csv::exportCSV(sheet, fileSaveDialog->GetFilterIndex() == 0 ? ';' : ',', '"')
 			);
-			fileSaveDialog->Destroy();
 		}
+		fileSaveDialog->Destroy();
+	}
+
+	void MainFrame::showPlotSaveDialog()
+	{
+		if (myONEST.empty())
+		{
+			wxMessageBox("Nothing is calculated yet, so there is nothing to save.", "Information", wxICON_INFORMATION | wxOK);
+			return;
+		}
+
+		wxFileDialog* fileSaveDialog = new wxFileDialog(
+			this,
+			"Save ONEST plot...",
+			wxEmptyString,
+			wxEmptyString,
+			"PNG files|*.png",
+			wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
+			wxDefaultPosition
+		);
+		if (fileSaveDialog->ShowModal() == wxID_OK)
+		{
+			pMyDiagram->renderToBitmap().SaveFile(fileSaveDialog->GetPath(), wxBITMAP_TYPE_PNG);
+		}
+		fileSaveDialog->Destroy();
 	}
 
 	void MainFrame::recalculateValues()

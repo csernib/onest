@@ -31,7 +31,7 @@ namespace onest::gui
 {
 	Diagram::Diagram(wxWindow* parent) : wxWindow(parent, wxID_ANY)
 	{
-		Bind(wxEVT_PAINT, &Diagram::render, this);
+		Bind(wxEVT_PAINT, &Diagram::handlePaintEvent, this);
 		Bind(wxEVT_SIZE, [this](wxSizeEvent&) { Refresh(); });
 
 		SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -43,19 +43,41 @@ namespace onest::gui
 		Refresh();
 	}
 
+	wxBitmap Diagram::renderToBitmap()
+	{
+		const wxSize bitmapSize(800, 600);
+		wxBitmap screenshot(bitmapSize);
+		wxMemoryDC memDC;
+
+		memDC.SelectObject(screenshot);
+		memDC.SetBackground(wxBrush(wxColor(255, 255, 255)));
+		memDC.Clear();
+
+		const wxPoint topLeft = { 50, 50 };
+		const wxPoint bottomRight = bitmapSize - topLeft;
+
+		render(memDC, topLeft, bottomRight);
+
+		memDC.SelectObject(wxNullBitmap);
+		return screenshot;
+	}
+
 	void Diagram::clearDiagram()
 	{
 		myONEST = calc::ONEST();
 		Refresh();
 	}
 
-	void Diagram::render(wxPaintEvent& event)
+	void Diagram::handlePaintEvent(wxPaintEvent& event)
 	{
 		wxBufferedPaintDC dc(this);
 		dc.Clear();
-
 		const auto [topLeft, bottomRight] = calculateTopLeftAndBottomRight(dc);
+		render(dc, topLeft, bottomRight);
+	}
 
+	void Diagram::render(wxDC& dc, wxPoint topLeft, wxPoint bottomRight)
+	{
 		if (topLeft.x >= bottomRight.x || topLeft.y >= bottomRight.y)
 			return;
 
@@ -73,7 +95,7 @@ namespace onest::gui
 		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
 	}
 
-	std::pair<wxPoint, wxPoint> Diagram::calculateTopLeftAndBottomRight(wxBufferedPaintDC& dc) const
+	std::pair<wxPoint, wxPoint> Diagram::calculateTopLeftAndBottomRight(wxDC& dc) const
 	{
 		const int borderWidthBasis  = 20;
 
@@ -90,14 +112,14 @@ namespace onest::gui
 		return { topLeft, bottomRight };
 	}
 
-	void Diagram::drawBackgroundAndBorders(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight) const
+	void Diagram::drawBackgroundAndBorders(wxDC& dc, wxPoint topLeft, wxPoint bottomRight) const
 	{
 		// We need to add 3 instead of 2 when calculating the height due to a bug.
 		// TODO: Recheck this on other platforms. On Windows, adding only 2 causes zero OPAs to overlap with the border.
 		dc.DrawRectangle(topLeft.x - 1, topLeft.y - 1, bottomRight.x - topLeft.x + 2, bottomRight.y - topLeft.y + 3);
 	}
 
-	void Diagram::drawVerticalGridLines(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
+	void Diagram::drawVerticalGridLines(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
 	{
 		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
 		for (size_t i = 1; i < myONEST[0].size() - 1; ++i)
@@ -107,7 +129,7 @@ namespace onest::gui
 		}
 	}
 
-	void Diagram::drawOPAGridLinesAndText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
+	void Diagram::drawOPAGridLinesAndText(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
 	{
 		std::vector<wxRect> textPlacements;
 		auto draw = [&](calc::number_t opaValue, bool gridLine)
@@ -142,7 +164,7 @@ namespace onest::gui
 		draw(0.0, false);
 	}
 
-	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
+	void Diagram::drawObserverIndexes(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
 	{
 		if (myONEST[0].size() >= 2)
 		{
@@ -165,7 +187,7 @@ namespace onest::gui
 		}
 	}
 
-	void Diagram::drawONESTPlot(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const
+	void Diagram::drawONESTPlot(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const
 	{
 		for (size_t i = 0; i < myONEST.size(); ++i)
 		{
