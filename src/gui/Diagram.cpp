@@ -16,6 +16,15 @@ namespace
 	{
 		return static_cast<int>(lround(value));
 	}
+
+	bool rectanglesIntersect(const std::vector<wxRect>& rects, const wxRect& newRect)
+	{
+		auto rectIntersects = [&](auto& r) { return !r.Intersect(newRect).IsEmpty(); };
+		if (std::ranges::find_if(rects, rectIntersects) != rects.end())
+			return true;
+
+		return false;
+	}
 }
 
 namespace onest::gui
@@ -100,6 +109,7 @@ namespace onest::gui
 
 	void Diagram::drawOPAGridLinesAndText(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const
 	{
+		std::vector<wxRect> textPlacements;
 		auto draw = [&](calc::number_t opaValue, bool gridLine)
 		{
 			const int y = topLeft.y + roundToInt(scaleFactorY - opaValue * scaleFactorY);
@@ -108,7 +118,13 @@ namespace onest::gui
 
 			const std::string text = std::format("{:.2f}", opaValue);
 			const wxSize extent = dc.GetTextExtent(text);
-			dc.DrawText(text, topLeft.x - extent.x - 2, y - roundToInt(extent.y / 2.0));
+			const wxPoint pos(topLeft.x - extent.x - 2, y - roundToInt(extent.y / 2.0));
+			const wxRect placement(pos, extent);
+			if (rectanglesIntersect(textPlacements, placement))
+				return;
+
+			textPlacements.push_back(placement);
+			dc.DrawText(text, pos);
 		};
 
 		dc.SetPen(wxPen(wxColor(200, 200, 200), 1, wxPENSTYLE_SHORT_DASH));
@@ -116,20 +132,21 @@ namespace onest::gui
 		const auto [bandwidthMin, bandwidthMax] = calc::calculateBandwidthMinMax(myONEST);
 		const calc::ObserversNeeded observersNeeded = calc::calculateObserversNeeded(myONEST);
 
-		draw(1.0, false);
-		draw(0.0, false);
 		draw(bandwidthMin, true);
 		draw(bandwidthMax, true);
 
 		if (observersNeeded.result != calc::ObserversNeeded::DIVERGED)
 			draw(observersNeeded.opaValue, true);
+
+		draw(1.0, false);
+		draw(0.0, false);
 	}
 
 	void Diagram::drawObserverIndexes(wxBufferedPaintDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const
 	{
 		if (myONEST[0].size() >= 2)
 		{
-			// TODO: Only draw text at every Nth column if it would not fit!
+			std::vector<wxRect> textPlacements;
 			const int y = bottomRight.y + 2;
 			for (size_t i = 0; i < myONEST[0].size(); ++i)
 			{
@@ -137,7 +154,13 @@ namespace onest::gui
 
 				const wxString observerCount = std::to_string(i + 2);
 				const wxSize extent = dc.GetTextExtent(observerCount);
-				dc.DrawText(observerCount, x - roundToInt(extent.x / 2.0), y);
+				const wxPoint pos(x - roundToInt(extent.x / 2.0), y);
+				const wxRect placement(pos, extent);
+				if (rectanglesIntersect(textPlacements, placement))
+					continue;
+
+				textPlacements.push_back(placement);
+				dc.DrawText(observerCount, pos);
 			}
 		}
 	}
