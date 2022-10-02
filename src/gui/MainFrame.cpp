@@ -18,6 +18,7 @@
 
 #include "rsc/dice.h"
 #include "rsc/header_toggle.h"
+#include "rsc/plot_save.h"
 
 
 using namespace onest::calc;
@@ -68,7 +69,12 @@ namespace onest::gui
 		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE), "Export ONEST output...");
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
 
-		toolbar->AddTool(TOOLBAR_PLOT_SAVE_BUTTON, "Save plot", wxArtProvider::GetBitmap(wxART_FILE_SAVE_AS), "Save ONEST plot...");
+		toolbar->AddTool(
+			TOOLBAR_PLOT_SAVE_BUTTON,
+			"Save plot",
+			wxBitmap::NewFromPNGData(rsc::plot_save, sizeof(rsc::plot_save)),
+			"Save ONEST plot..."
+		);
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showPlotSaveDialog(); }, TOOLBAR_PLOT_SAVE_BUTTON);
 
 		auto diceButton = toolbar->AddTool(
