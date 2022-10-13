@@ -107,7 +107,7 @@ namespace onest::gui
 		const int borderWidthBottom = borderWidthBasis + dc.GetTextExtent("0").y + 2;
 
 		const wxPoint topLeft = { borderWidthLeft, borderWidthTop };
-		const wxPoint bottomRight = { GetSize().x - borderWidthRight, GetSize().y / 2 - borderWidthBottom };	// TODO: We should probably do this on a window basis via sizers from the main frame.
+		const wxPoint bottomRight = { GetSize().x - borderWidthRight, GetSize().y - borderWidthBottom };
 
 		return { topLeft, bottomRight };
 	}

@@ -3,6 +3,8 @@
 #include "../Exception.h"
 
 #include <algorithm>
+#include <cassert>
+#include <ranges>
 #include <set>
 
 
@@ -72,15 +74,51 @@ namespace
 		if (n <= 1)
 			return 1;
 
-		if (n == std::numeric_limits<unsigned>::max())
-			return std::numeric_limits<unsigned>::max();
+		if (n == numeric_limits<unsigned>::max())
+			return numeric_limits<unsigned>::max();
 
 		const unsigned previousFactorial = factorial(n - 1);
 		const unsigned currentFactorial = n * previousFactorial;
 		if (currentFactorial / n != previousFactorial)
-			return std::numeric_limits<unsigned>::max();
+			return numeric_limits<unsigned>::max();
 
 		return currentFactorial;
+	}
+
+	auto mapToOPAsAtObserverCountIndex(const ONEST& onest, size_t observerCountIndex)
+	{
+		return views::transform(onest, [=](const OPAC& opac) { return opac[observerCountIndex]; });
+	}
+
+	template<ranges::range R>
+	number_t median(R&& range)
+	{
+		assert(!range.empty());
+
+		vector opas(range.begin(), range.end());
+		ranges::sort(opas);
+		const size_t s = opas.size();
+		return s % 2 == 1 ? opas[s / 2] : (opas[s / 2 - 1] + opas[s / 2]) / 2.0;
+	}
+
+	OPAC calculateMinOPAC(const ONEST& onest)
+	{
+		assert(!onest.empty());
+
+		OPAC minOPAC;
+		minOPAC.reserve(onest[0].size());
+		for (size_t i = 0; i < onest[0].size(); ++i)
+			minOPAC.push_back(ranges::min(mapToOPAsAtObserverCountIndex(onest, i)));
+
+		return minOPAC;
+	}
+}
+
+namespace onest::test
+{
+	number_t median(const vector<number_t>& input)
+	{
+		return ::median(input);
 	}
 }
 
@@ -128,6 +166,28 @@ namespace onest::calc
 		return calculateONEST(matrix, move(randomPermutations));
 	}
 
+	ONEST simplifyONEST(const ONEST& onest)
+	{
+		if (onest.empty())
+			return ONEST();
+
+		const size_t opacSize = onest[0].size();
+
+		OPAC minOPAC, maxOPAC, medianOPAC;
+		minOPAC.reserve(opacSize);
+		maxOPAC.reserve(opacSize);
+		medianOPAC.reserve(opacSize);
+		for (size_t i = 0; i < opacSize; ++i)
+		{
+			const auto opasAtIndex = mapToOPAsAtObserverCountIndex(onest, i);
+			minOPAC.push_back(ranges::min(opasAtIndex));
+			maxOPAC.push_back(ranges::max(opasAtIndex));
+			medianOPAC.push_back(median(opasAtIndex));
+		}
+
+		return { minOPAC, medianOPAC, maxOPAC };
+	}
+
 	number_t calculateOPAN(const ONEST& onest)
 	{
 		if (onest.empty())
@@ -137,21 +197,18 @@ namespace onest::calc
 		return anyOPAC[anyOPAC.size() - 1];
 	}
 
+	number_t calculateBandwidth(const ONEST& onest)
+	{
+		auto [min, max] = calculateBandwidthMinMax(onest);
+		return max - min;
+	}
+
 	pair<number_t, number_t> calculateBandwidthMinMax(const ONEST& onest)
 	{
 		if (onest.empty())
 			throw Exception("Bandwidth is undefined for empty ONEST.");
 
-		number_t min = numeric_limits<number_t>::max();
-		number_t max = numeric_limits<number_t>::min();
-		for (const OPAC& opac : onest)
-		{
-			if (min > opac[0])
-				min = opac[0];
-			if (max < opac[0])
-				max = opac[0];
-		}
-
+		auto [min, max] = ranges::minmax(mapToOPAsAtObserverCountIndex(onest, 0));
 		return { min, max };
 	}
 
@@ -161,18 +218,7 @@ namespace onest::calc
 		if (onest.empty())
 			throw Exception("Number of observers needed is undefined for empty ONEST.");
 
-		OPAC minOPAC;
-		for (size_t i = 0; i < onest[0].size(); ++i)
-		{
-			number_t min = 1.0;
-			for (size_t j = 0; j < onest.size(); ++j)
-			{
-				if (onest[j][i] < min)
-					min = onest[j][i];
-			}
-
-			minOPAC.push_back(min);
-		}
+		const OPAC minOPAC = calculateMinOPAC(onest);
 
 		if (minOPAC[minOPAC.size() - 1] == 1.0)
 			return { ObserversNeeded::CONVERGED_AND_DEFINED, 1, minOPAC[0] };
@@ -201,11 +247,5 @@ namespace onest::calc
 			return { ObserversNeeded::CONVERGED_AND_DEFINED, firstIndex + 1, minOPAC[firstIndex - 1] };
 
 		return { ObserversNeeded::CONVERGED_BUT_UNKNOWN, (unsigned)minOPAC.size() + 1, minOPAC[minOPAC.size() - 1] };
-	}
-
-	number_t calculateBandwidth(const ONEST& onest)
-	{
-		auto [min, max] = calculateBandwidthMinMax(onest);
-		return max - min;
 	}
 }

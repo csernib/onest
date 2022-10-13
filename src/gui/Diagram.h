@@ -7,8 +7,6 @@
 #include <utility>
 
 
-class wxBufferedPaintDC;
-
 namespace onest::gui
 {
 	class Diagram final : public wxWindow

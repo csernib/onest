@@ -68,6 +68,13 @@ namespace
 	}
 }
 
+namespace onest::test
+{
+	number_t median(const vector<number_t>& input);
+}
+
+using onest::test::median;
+
 CASE(TAG "ONEST for all permutations yields the correct OPACs.")
 {
 	// Given
@@ -108,6 +115,42 @@ CASE(TAG "ONEST for 0 random permutations returns empty container.")
 
 	// Then
 	EXPECT(onest.empty());
+}
+
+CASE(TAG "Median calculation works correctly.")
+{
+	// Given
+	vector<number_t> oddNumberedInput = { 7.0, 1.8, 2.0, 5.0, 3.5 };
+	vector<number_t> evenNumberedInput = { 7.0, 1.0, 3.0, 5.0 };
+
+	// When, then
+	EXPECT(median(oddNumberedInput) == 3.5);
+	EXPECT(median(evenNumberedInput) == 4.0);
+}
+
+CASE(TAG "ONEST simplification works correctly.")
+{
+	// Given
+	const ONEST onest =
+	{
+		{ 7.0, 1.8, 2.0, 5.0, 3.4 },
+		{ 5.0, 3.2, 1.8, 8.0, 3.0 },
+		{ 1.0, 4.0, 1.2, 3.0, 4.0 },
+		{ 8.0, 1.0, 3.0, 2.0, 4.5 }
+	};
+
+	// When
+	const ONEST simplifiedONEST = simplifyONEST(onest);
+
+	// Then
+	const OPAC minimumOPAC = { 1.0, 1.0, 1.2, 2.0, 3.0 };
+	const OPAC maximumOPAC = { 8.0, 4.0, 3.0, 8.0, 4.5 };
+	const OPAC medianOPAC  = { 6.0, 2.5, 1.9, 4.0, 3.7 };
+
+	EXPECT(simplifiedONEST.size() == 3);
+	EXPECT(simplifiedONEST[0] == minimumOPAC);
+	EXPECT(simplifiedONEST[1] == medianOPAC);
+	EXPECT(simplifiedONEST[2] == maximumOPAC);
 }
 
 CASE(TAG "OPA(N) is calculated correctly.")

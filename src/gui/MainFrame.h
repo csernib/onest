@@ -49,6 +49,7 @@ namespace onest::gui
 
 		Table* pMyTable = nullptr;
 		Diagram* pMyDiagram = nullptr;
+		Diagram* pMySimplifiedDiagram = nullptr;
 
 		wxStaticText* pMyOPANValue = nullptr;
 		wxStaticText* pMyBandwidthValue = nullptr;

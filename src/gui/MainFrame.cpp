@@ -158,6 +158,9 @@ namespace onest::gui
 
 		pMyDiagram = new Diagram(this);
 		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
+
+		pMySimplifiedDiagram = new Diagram(this);
+		pMyLeftVerticalLayout->Add(pMySimplifiedDiagram, wxSizerFlags(1).Expand());
 	}
 
 	void MainFrame::showLoadFileDialog()
@@ -293,6 +296,7 @@ namespace onest::gui
 			pMyObserversNeededValue->SetLabelText(OBSERVERS_NEEDED_TEXT + observersNeededText);
 
 			pMyDiagram->plotONEST(myONEST);
+			pMySimplifiedDiagram->plotONEST(simplifyONEST(myONEST));
 
 			SetStatusText("Ready");
 		}
@@ -302,6 +306,7 @@ namespace onest::gui
 			pMyOPANValue->SetLabelText(OPAN_TEXT + UNDEFINED_VALUE_TEXT);
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
 			pMyDiagram->plotONEST(ONEST());
+			pMySimplifiedDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
 		}
 	}
