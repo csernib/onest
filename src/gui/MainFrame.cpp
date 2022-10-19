@@ -5,6 +5,7 @@
 #include "../calc/CategoryFactory.h"
 #include "../csv/Exporter.h"
 #include "../csv/Parser.h"
+#include "../csv/ParserException.h"
 #include "../io/File.h"
 #include "../rule/Categorizer.h"
 #include "../git.h"
@@ -179,12 +180,20 @@ namespace onest::gui
 		);
 		if (fileOpenDialog->ShowModal() == wxID_OK)
 		{
-			// TODO: Exception handling!
-			sheet = csv::parseSheet(
-				io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()),
-				fileOpenDialog->GetFilterIndex() == 0 ? ';' : ',',
-				'"'
-			);
+			try
+			{
+				sheet = csv::parseSheet(
+					io::File::readFileAsString(fileOpenDialog->GetPath().ToStdString()),
+					fileOpenDialog->GetFilterIndex() == 0 ? ';' : ',',
+					'"'
+				);
+			}
+			catch (const csv::ParserException& ex)
+			{
+				wxMessageBox(ex.what(), "Error", wxICON_ERROR);
+				fileOpenDialog->Destroy();
+				return;
+			}
 
 			createTable(sheet);
 

@@ -11,6 +11,8 @@ namespace onest::csv
 {
 	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar) try
 	{
+		// TODO: It is possible to get a stack overflow on Windows (VS 2022) if the input is long enough and a quote
+		//       is left open. Fix this!
 		const regex csvRegex(
 			format(R"__((?:{1}((?:[^{1}]|{1}{1})*){1}|([^{0}{1}]*?))(?:({0})?(\r\n|\n|\r|$)|{0}))__", separator, quoteChar),
 			regex_constants::optimize
