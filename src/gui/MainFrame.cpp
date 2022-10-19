@@ -30,6 +30,8 @@ namespace onest::gui
 	const string MainFrame::OPAN_TEXT = "OPA(N): ";
 	const string MainFrame::BANDWIDTH_TEXT = "Bandwidth: ";
 	const string MainFrame::OBSERVERS_NEEDED_TEXT = "Observers needed: ";
+	const string MainFrame::DIAGRAM_TITLE_TEXT = "ONEST plot";
+	const string MainFrame::SIMPLIFIED_DIAGRAM_TITLE_TEXT = "Simplified ONEST plot";
 	const string MainFrame::UNDEFINED_VALUE_TEXT = "N/A";
 
 	enum
@@ -143,23 +145,23 @@ namespace onest::gui
 
 	void MainFrame::createLayoutOnTheLeft()
 	{
-		pMyOPANValue = new wxStaticText(this, -1, OPAN_TEXT + UNDEFINED_VALUE_TEXT);
+		pMyOPANValue = new wxStaticText(this, wxID_ANY, OPAN_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyOPANValue);
 
-		pMyBandwidthValue = new wxStaticText(this, -1, BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
+		pMyBandwidthValue = new wxStaticText(this, wxID_ANY, BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyBandwidthValue);
 
-		pMyObserversNeededValue = new wxStaticText(this, -1, OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
+		pMyObserversNeededValue = new wxStaticText(this, wxID_ANY, OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyObserversNeededValue);
 
 		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
 		pMyLeftVerticalLayout->Add(pMyCategorizerInputField);
 		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
 
-		pMyDiagram = new Diagram(this);
+		pMyDiagram = new Diagram(this, DIAGRAM_TITLE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
 
-		pMySimplifiedDiagram = new Diagram(this);
+		pMySimplifiedDiagram = new Diagram(this, SIMPLIFIED_DIAGRAM_TITLE_TEXT);
 		pMyLeftVerticalLayout->Add(pMySimplifiedDiagram, wxSizerFlags(1).Expand());
 	}
 

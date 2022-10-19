@@ -29,7 +29,9 @@ namespace
 
 namespace onest::gui
 {
-	Diagram::Diagram(wxWindow* parent) : wxWindow(parent, wxID_ANY)
+	Diagram::Diagram(wxWindow* parent, std::string title)
+		: wxWindow(parent, wxID_ANY)
+		, myTitle(move(title))
 	{
 		Bind(wxEVT_PAINT, &Diagram::handlePaintEvent, this);
 		Bind(wxEVT_SIZE, [this](wxSizeEvent&) { Refresh(); });
@@ -93,6 +95,7 @@ namespace onest::gui
 		drawOPAGridLinesAndText(dc, topLeft, bottomRight, scaleFactorY);
 		drawObserverIndexes(dc, topLeft, bottomRight, scaleFactorX);
 		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
+		drawTitle(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
 	}
 
 	std::pair<wxPoint, wxPoint> Diagram::calculateTopLeftAndBottomRight(wxDC& dc) const
@@ -104,7 +107,7 @@ namespace onest::gui
 		const int borderWidthLeft   = borderWidthBasis + dc.GetTextExtent("0.5").x + 2;
 		const int borderWidthRight  = borderWidthBasis;
 		const int borderWidthTop    = borderWidthBasis;
-		const int borderWidthBottom = borderWidthBasis + dc.GetTextExtent("0").y + 2;
+		const int borderWidthBottom = borderWidthBasis + dc.GetTextExtent("0").y + dc.GetTextExtent(myTitle).y + 8;
 
 		const wxPoint topLeft = { borderWidthLeft, borderWidthTop };
 		const wxPoint bottomRight = { GetSize().x - borderWidthRight, GetSize().y - borderWidthBottom };
@@ -216,5 +219,15 @@ namespace onest::gui
 				dc.DrawLine(x1, y, x2, y);
 			}
 		}
+	}
+
+	void Diagram::drawTitle(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const
+	{
+		const wxSize extent = dc.GetTextExtent(myTitle);
+		const int middle = topLeft.x + (bottomRight.x - topLeft.x) / 2;
+		const int y = bottomRight.y + dc.GetTextExtent("0").y + 6;
+		const int x = middle - extent.x / 2;
+
+		dc.DrawText(myTitle, x, y);
 	}
 }

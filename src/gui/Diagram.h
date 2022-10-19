@@ -12,7 +12,7 @@ namespace onest::gui
 	class Diagram final : public wxWindow
 	{
 	public:
-		explicit Diagram(wxWindow* parent);
+		explicit Diagram(wxWindow* parent, std::string title);
 
 		void plotONEST(calc::ONEST onest);
 		wxBitmap renderToBitmap();
@@ -29,6 +29,9 @@ namespace onest::gui
 		void drawOPAGridLinesAndText(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorY) const;
 		void drawObserverIndexes(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX) const;
 		void drawONESTPlot(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const;
+		void drawTitle(wxDC& dc, wxPoint topLeft, wxPoint bottomRight, double scaleFactorX, double scaleFactorY) const;
+
+		const std::string myTitle;
 
 		calc::ONEST myONEST;
 	};

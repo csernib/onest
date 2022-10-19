@@ -24,6 +24,8 @@ namespace onest::gui
 		static const std::string OPAN_TEXT;
 		static const std::string BANDWIDTH_TEXT;
 		static const std::string OBSERVERS_NEEDED_TEXT;
+		static const std::string DIAGRAM_TITLE_TEXT;
+		static const std::string SIMPLIFIED_DIAGRAM_TITLE_TEXT;
 		static const std::string UNDEFINED_VALUE_TEXT;
 
 	public:
