@@ -50,7 +50,6 @@ namespace onest::gui
 
 		createToolbar();
 		createMainLayoutSizers();
-		createTable(csv::Sheet());
 		createLayoutOnTheLeft();
 
 		csv::Sheet emptySheet(100);
