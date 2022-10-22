@@ -27,6 +27,9 @@ namespace onest::gui
 	private:
 		void setFirstRowAsHeaderWithoutStatusRefresh(bool firstRowAsHeader);
 		void refreshDisplayedColumnStatus(int column);
+		void addColumnTickboxCharacters(int column);
+		void removeColumnTickboxCharacters(int column);
+		void refreshColumnTickboxStatus(int column);
 
 		bool myFirstRowIsHeader = false;
 		std::vector<bool> myColumnEnabledStatuses;

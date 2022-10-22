@@ -86,7 +86,10 @@ namespace onest::gui
 		{
 			BeginBatch();
 			for (int i = 0; i < this->GetNumberCols(); ++i)
+			{
 				SetColLabelValue(i, GetCellValue(0, i));
+				addColumnTickboxCharacters(i);
+			}
 
 			// TODO: This is problematic. If there was a header originally, then we will get a scrollbar when the row is readded.
 			//       Otherwise an empty "dummy" row is left there.
@@ -99,10 +102,12 @@ namespace onest::gui
 			InsertRows();
 			for (int i = 0; i < this->GetNumberCols(); ++i)
 			{
+				removeColumnTickboxCharacters(i);
 				SetCellValue(0, i, GetColLabelValue(i));
 
 				// TODO: What if we are out of range (more than Z number of columns)?
 				SetColLabelValue(i, wxString(static_cast<char>('A' + i)));
+				addColumnTickboxCharacters(i);
 			}
 			EndBatch();
 		}
@@ -122,11 +127,35 @@ namespace onest::gui
 		const bool columnIsEnabled = myColumnEnabledStatuses[column];
 
 		BeginBatch();
+		refreshColumnTickboxStatus(column);
 		for (int i = 0; i < GetNumberRows(); ++i)
 		{
 			SetCellTextColour(i, column, columnIsEnabled ? black : lightGrey);
 			SetCellBackgroundColour(i, column, columnIsEnabled ? white : darkGrey);
 		}
 		EndBatch();
+	}
+
+	void Table::addColumnTickboxCharacters(int column)
+	{
+		SetColLabelValue(column, "_\n" + GetColLabelValue(column));
+		refreshColumnTickboxStatus(column);
+	}
+
+	void Table::removeColumnTickboxCharacters(int column)
+	{
+		SetColLabelValue(column, GetColLabelValue(column).substr(2));
+	}
+
+	void Table::refreshColumnTickboxStatus(int column)
+	{
+		static const wchar_t ballotBoxWithCheck = L'\u2611';
+		static const wchar_t ballotBox = L'\u2610';
+
+		const bool columnIsEnabled = myColumnEnabledStatuses[column];
+
+		wxString label = GetColLabelValue(column);
+		label.SetChar(0, columnIsEnabled ? ballotBoxWithCheck : ballotBox);
+		SetColLabelValue(column, label);
 	}
 }
