@@ -315,6 +315,7 @@ namespace onest::gui
 			myONEST.clear();
 			pMyOPANValue->SetLabelText(OPAN_TEXT + UNDEFINED_VALUE_TEXT);
 			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
+			pMyObserversNeededValue->SetLabelText(OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
 			pMyDiagram->plotONEST(ONEST());
 			pMySimplifiedDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
