@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../calc/AssessmentMatrix.h"
+#include "../calc/CategoryFactory.h"
 #include "../calc/ONEST.h"
 #include "../csv/Sheet.h"
 
@@ -8,6 +9,7 @@
 
 #include <wx/checkbox.h>
 #include <wx/frame.h>
+#include <wx/grid.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
@@ -42,12 +44,15 @@ namespace onest::gui
 		void showPlotSaveDialog();
 
 		void recalculateValues();
-		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors();
+		void refreshCategoryDistributionTable(const calc::AssessmentMatrix& matrix, const calc::CategoryFactory& categoryFactory);
+		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors(calc::CategoryFactory& categoryFactory);
 
 		calc::ONEST myONEST;
 
 		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
 		wxBoxSizer* pMyLeftVerticalLayout = nullptr;
+
+		wxGrid* pMyCategoryGrid = nullptr;
 
 		Table* pMyTable = nullptr;
 		Diagram* pMyDiagram = nullptr;

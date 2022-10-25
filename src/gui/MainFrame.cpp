@@ -2,7 +2,6 @@
 #include "Diagram.h"
 #include "Table.h"
 
-#include "../calc/CategoryFactory.h"
 #include "../csv/Exporter.h"
 #include "../csv/Parser.h"
 #include "../csv/ParserException.h"
@@ -10,6 +9,8 @@
 #include "../rule/Categorizer.h"
 #include "../git.h"
 
+#include <format>
+#include <numeric>
 #include <ranges>
 
 #include <wx/artprov.h>
@@ -114,8 +115,9 @@ namespace onest::gui
 
 		Bind(wxEVT_SIZE, [this](wxSizeEvent& e)
 		{
-			auto size = GetClientSize();
+			const wxSize size = GetClientSize();
 			pMyLeftVerticalLayout->SetMinSize(size.x / 3, size.y);
+			pMyCategoryGrid->SetMaxSize(pMyLeftVerticalLayout->GetMinSize());
 			e.Skip();
 		});
 	}
@@ -157,6 +159,18 @@ namespace onest::gui
 		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
 		pMyLeftVerticalLayout->Add(pMyCategorizerInputField);
 		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
+
+		pMyCategoryGrid = new wxGrid(this, wxID_ANY);
+		pMyCategoryGrid->CreateGrid(3, 1, wxGrid::wxGridSelectNone);
+		pMyCategoryGrid->HideColLabels();
+		pMyCategoryGrid->HideRowLabels();
+		pMyCategoryGrid->EnableEditing(false);
+		pMyCategoryGrid->EnableDragColSize(false);
+		pMyCategoryGrid->EnableDragRowSize(false);
+		pMyCategoryGrid->SetScrollbars(10, 0, 10, 0);    // Disable vertical scrollbar.
+		pMyCategoryGrid->SetMargins(0, wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));    // Scrollbar would hide last row without extra margin.
+		pMyCategoryGrid->SetDefaultCellBackgroundColour(pMyCategoryGrid->GetBackgroundColour());
+		pMyLeftVerticalLayout->Add(pMyCategoryGrid, wxSizerFlags().Expand());
 
 		pMyDiagram = new Diagram(this, DIAGRAM_TITLE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
@@ -276,8 +290,11 @@ namespace onest::gui
 			auto randomizeSeedButton = GetToolBar()->FindById(TOOLBAR_DICE_BUTTON);
 			assert(randomizeSeedButton && "This should always exist.");
 
+			CategoryFactory categoryFactory;
+			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors(categoryFactory);
+			refreshCategoryDistributionTable(matrix, categoryFactory);
+
 			// TODO: Do it in a different thread!
-			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors();
 			myONEST = calculateRandomPermutations(
 				matrix,
 				100,
@@ -322,7 +339,54 @@ namespace onest::gui
 		}
 	}
 
-	AssessmentMatrix MainFrame::createAssessmentMatrixAndUpdateCellColors()
+	void MainFrame::refreshCategoryDistributionTable(const AssessmentMatrix& matrix, const CategoryFactory& categoryFactory)
+	{
+		assert(pMyCategoryGrid);
+
+		auto categoryHasher = categoryFactory.createHasher();
+		unordered_map<Category, unsigned, decltype(categoryHasher)> countByCategories(categoryFactory.getNumberOfCategories(), categoryHasher);
+
+		for (unsigned i = 0; i < matrix.getTotalNumberOfCases(); ++i)
+		{
+			for (unsigned j = 0; j < matrix.getTotalNumberOfObservers(); ++j)
+				++countByCategories[matrix.get(j, i)];
+		}
+
+		vector<pair<Category, unsigned>> sortedCounts(countByCategories.begin(), countByCategories.end());
+		ranges::sort(sortedCounts, [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
+
+		const unsigned total = accumulate(
+			sortedCounts.begin(),
+			sortedCounts.end(),
+			0u,
+			[](unsigned sum, const auto& categoryAndCount) { return sum + categoryAndCount.second; }
+		);
+
+		pMyCategoryGrid->DeleteCols(0, -1, false);
+		pMyCategoryGrid->InsertCols(0, countByCategories.size() + 1, false);
+
+		pMyCategoryGrid->BeginBatch();
+
+		pMyCategoryGrid->SetCellValue(0, 0, "Category:");
+		pMyCategoryGrid->SetCellValue(1, 0, "Count:");
+		pMyCategoryGrid->SetCellValue(2, 0, "Percentage:");
+
+		int col = 1;
+		for (const auto& [category, count] : sortedCounts)
+		{
+			const string categoryText = categoryFactory.findCategoryText(category);
+			pMyCategoryGrid->SetCellValue(0, col, categoryText.empty() ? "<empty cell>" : categoryText);
+			pMyCategoryGrid->SetCellValue(1, col, to_string(count));
+			pMyCategoryGrid->SetCellValue(2, col, format("{:.2f}%", (double)count / total * 100.0));
+			++col;
+		}
+
+		pMyCategoryGrid->AutoSizeColumns();
+
+		pMyCategoryGrid->EndBatch();
+	}
+
+	AssessmentMatrix MainFrame::createAssessmentMatrixAndUpdateCellColors(CategoryFactory& categoryFactory)
 	{
 		const int numberOfColumns = pMyTable->GetNumberCols();
 		const int numberOfRows = pMyTable->GetNumberRows();
@@ -334,7 +398,6 @@ namespace onest::gui
 		if (auto ruleString = pMyCategorizerInputField->GetValue().ToStdString(); !ruleString.empty())
 			categorizer = Categorizer(ruleString);
 
-		CategoryFactory categoryFactory;
 		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
 
 		// TODO: Exception safety! (at the other places too!)
