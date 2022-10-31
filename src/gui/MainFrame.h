@@ -61,6 +61,7 @@ namespace onest::gui
 		wxStaticText* pMyOPANValue = nullptr;
 		wxStaticText* pMyBandwidthValue = nullptr;
 		wxStaticText* pMyObserversNeededValue = nullptr;
+		wxStaticText* pMyCategorizerLabel = nullptr;
 		wxTextCtrl* pMyCategorizerInputField = nullptr;
 	};
 }

@@ -118,6 +118,14 @@ namespace onest::gui
 			const wxSize size = GetClientSize();
 			pMyLeftVerticalLayout->SetMinSize(size.x / 3, size.y);
 			pMyCategoryGrid->SetMaxSize(pMyLeftVerticalLayout->GetMinSize());
+
+			const int categorizerLabelX = pMyCategorizerLabel->GetSize().x;
+			const int categorizerSizeX = size.x / 3 - categorizerLabelX - 10;
+			if (categorizerSizeX > categorizerLabelX + 10)
+				pMyCategorizerInputField->SetMinSize({ categorizerSizeX, pMyCategorizerInputField->GetMinSize().y });
+			else
+				pMyCategorizerInputField->SetMinSize({ categorizerLabelX + 10, pMyCategorizerInputField->GetMinSize().y });
+
 			e.Skip();
 		});
 	}
@@ -156,9 +164,20 @@ namespace onest::gui
 		pMyObserversNeededValue = new wxStaticText(this, wxID_ANY, OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyObserversNeededValue);
 
+		pMyLeftVerticalLayout->AddSpacer(5);
+
+		wxBoxSizer* categorizerLabelAndInputField = new wxBoxSizer(wxHORIZONTAL);
+
+		pMyCategorizerLabel = new wxStaticText(this, wxID_ANY, "Categorizer: ");
+		categorizerLabelAndInputField->Add(pMyCategorizerLabel, wxSizerFlags().CenterVertical());
+
 		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
-		pMyLeftVerticalLayout->Add(pMyCategorizerInputField);
 		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
+		categorizerLabelAndInputField->Add(pMyCategorizerInputField);
+
+		pMyLeftVerticalLayout->Add(categorizerLabelAndInputField);
+
+		pMyLeftVerticalLayout->AddSpacer(4);
 
 		pMyCategoryGrid = new wxGrid(this, wxID_ANY);
 		pMyCategoryGrid->CreateGrid(3, 1, wxGrid::wxGridSelectNone);
