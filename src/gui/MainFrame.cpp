@@ -381,6 +381,11 @@ namespace onest::gui
 				pMyResultGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
 			pMyResultGrid->AutoSizeColumns();
 
+			pMyCategoryGrid->DeleteCols(1, -1, false);
+			pMyCategoryGrid->InsertCols(1);
+			for (int i = 0; i < 3; ++i)
+				pMyCategoryGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
+
 			pMyDiagram->plotONEST(ONEST());
 			pMySimplifiedDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
