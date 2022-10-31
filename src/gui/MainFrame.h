@@ -23,6 +23,10 @@ namespace onest::gui
 	class MainFrame final : public wxFrame
 	{
 	private:
+		static const int OPAN_ROW_INDEX = 0;
+		static const int BANDWIDTH_ROW_INDEX = 1;
+		static const int OBSERVERS_NEEDED_ROW_INDEX = 2;
+
 		static const std::string OPAN_TEXT;
 		static const std::string BANDWIDTH_TEXT;
 		static const std::string OBSERVERS_NEEDED_TEXT;
@@ -52,15 +56,13 @@ namespace onest::gui
 		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
 		wxBoxSizer* pMyLeftVerticalLayout = nullptr;
 
+		wxGrid* pMyResultGrid = nullptr;
 		wxGrid* pMyCategoryGrid = nullptr;
 
 		Table* pMyTable = nullptr;
 		Diagram* pMyDiagram = nullptr;
 		Diagram* pMySimplifiedDiagram = nullptr;
 
-		wxStaticText* pMyOPANValue = nullptr;
-		wxStaticText* pMyBandwidthValue = nullptr;
-		wxStaticText* pMyObserversNeededValue = nullptr;
 		wxStaticText* pMyCategorizerLabel = nullptr;
 		wxTextCtrl* pMyCategorizerInputField = nullptr;
 	};

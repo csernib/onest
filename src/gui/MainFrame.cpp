@@ -116,15 +116,22 @@ namespace onest::gui
 		Bind(wxEVT_SIZE, [this](wxSizeEvent& e)
 		{
 			const wxSize size = GetClientSize();
-			pMyLeftVerticalLayout->SetMinSize(size.x / 3, size.y);
-			pMyCategoryGrid->SetMaxSize(pMyLeftVerticalLayout->GetMinSize());
 
-			const int categorizerLabelX = pMyCategorizerLabel->GetSize().x;
-			const int categorizerSizeX = size.x / 3 - categorizerLabelX - 10;
-			if (categorizerSizeX > categorizerLabelX + 10)
-				pMyCategorizerInputField->SetMinSize({ categorizerSizeX, pMyCategorizerInputField->GetMinSize().y });
-			else
-				pMyCategorizerInputField->SetMinSize({ categorizerLabelX + 10, pMyCategorizerInputField->GetMinSize().y });
+			if (pMyLeftVerticalLayout)
+				pMyLeftVerticalLayout->SetMinSize(size.x / 3, size.y);
+
+			if (pMyCategoryGrid)
+				pMyCategoryGrid->SetMaxSize(pMyLeftVerticalLayout->GetMinSize());
+
+			if (pMyCategorizerInputField && pMyCategorizerLabel)
+			{
+				const int categorizerLabelX = pMyCategorizerLabel->GetSize().x;
+				const int categorizerSizeX = size.x / 3 - categorizerLabelX - 10;
+				if (categorizerSizeX > categorizerLabelX + 10)
+					pMyCategorizerInputField->SetMinSize({ categorizerSizeX, pMyCategorizerInputField->GetMinSize().y });
+				else
+					pMyCategorizerInputField->SetMinSize({ categorizerLabelX + 10, pMyCategorizerInputField->GetMinSize().y });
+			}
 
 			e.Skip();
 		});
@@ -155,41 +162,59 @@ namespace onest::gui
 
 	void MainFrame::createLayoutOnTheLeft()
 	{
-		pMyOPANValue = new wxStaticText(this, wxID_ANY, OPAN_TEXT + UNDEFINED_VALUE_TEXT);
-		pMyLeftVerticalLayout->Add(pMyOPANValue);
+		{
+			pMyLeftVerticalLayout->AddSpacer(5);
 
-		pMyBandwidthValue = new wxStaticText(this, wxID_ANY, BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
-		pMyLeftVerticalLayout->Add(pMyBandwidthValue);
+			wxBoxSizer* categorizerLabelAndInputField = new wxBoxSizer(wxHORIZONTAL);
 
-		pMyObserversNeededValue = new wxStaticText(this, wxID_ANY, OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
-		pMyLeftVerticalLayout->Add(pMyObserversNeededValue);
+			pMyCategorizerLabel = new wxStaticText(this, wxID_ANY, "Categorizer: ");
+			categorizerLabelAndInputField->Add(pMyCategorizerLabel, wxSizerFlags().CenterVertical());
 
-		pMyLeftVerticalLayout->AddSpacer(5);
+			pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
+			pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
+			categorizerLabelAndInputField->Add(pMyCategorizerInputField);
 
-		wxBoxSizer* categorizerLabelAndInputField = new wxBoxSizer(wxHORIZONTAL);
+			pMyLeftVerticalLayout->Add(categorizerLabelAndInputField);
 
-		pMyCategorizerLabel = new wxStaticText(this, wxID_ANY, "Categorizer: ");
-		categorizerLabelAndInputField->Add(pMyCategorizerLabel, wxSizerFlags().CenterVertical());
+			pMyLeftVerticalLayout->AddSpacer(4);
+		}
 
-		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
-		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
-		categorizerLabelAndInputField->Add(pMyCategorizerInputField);
+		{
+			pMyCategoryGrid = new wxGrid(this, wxID_ANY);
+			pMyCategoryGrid->CreateGrid(3, 1, wxGrid::wxGridSelectNone);
+			pMyCategoryGrid->HideColLabels();
+			pMyCategoryGrid->HideRowLabels();
+			pMyCategoryGrid->EnableEditing(false);
+			pMyCategoryGrid->EnableDragColSize(false);
+			pMyCategoryGrid->EnableDragRowSize(false);
+			pMyCategoryGrid->SetScrollbars(10, 0, 10, 0);    // Disable vertical scrollbar.
+			pMyCategoryGrid->SetMargins(0, wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));    // Scrollbar would hide last row without extra margin.
+			pMyCategoryGrid->SetDefaultCellBackgroundColour(pMyCategoryGrid->GetBackgroundColour());
+			pMyLeftVerticalLayout->Add(pMyCategoryGrid, wxSizerFlags().Expand());
+		}
 
-		pMyLeftVerticalLayout->Add(categorizerLabelAndInputField);
+		{
+			pMyResultGrid = new wxGrid(this, wxID_ANY);
+			pMyResultGrid->CreateGrid(3, 2, wxGrid::wxGridSelectNone);
+			pMyResultGrid->HideColLabels();
+			pMyResultGrid->HideRowLabels();
+			pMyResultGrid->EnableEditing(false);
+			pMyResultGrid->EnableDragColSize(false);
+			pMyResultGrid->EnableDragRowSize(false);
+			pMyResultGrid->SetScrollbars(0, 0, 0, 0);    // Disable scrollbars.
+			pMyResultGrid->SetDefaultCellBackgroundColour(pMyResultGrid->GetBackgroundColour());
 
-		pMyLeftVerticalLayout->AddSpacer(4);
+			pMyResultGrid->SetCellValue(OPAN_ROW_INDEX, 0, OPAN_TEXT);
+			pMyResultGrid->SetCellValue(BANDWIDTH_ROW_INDEX, 0, BANDWIDTH_TEXT);
+			pMyResultGrid->SetCellValue(OBSERVERS_NEEDED_ROW_INDEX, 0, OBSERVERS_NEEDED_TEXT);
 
-		pMyCategoryGrid = new wxGrid(this, wxID_ANY);
-		pMyCategoryGrid->CreateGrid(3, 1, wxGrid::wxGridSelectNone);
-		pMyCategoryGrid->HideColLabels();
-		pMyCategoryGrid->HideRowLabels();
-		pMyCategoryGrid->EnableEditing(false);
-		pMyCategoryGrid->EnableDragColSize(false);
-		pMyCategoryGrid->EnableDragRowSize(false);
-		pMyCategoryGrid->SetScrollbars(10, 0, 10, 0);    // Disable vertical scrollbar.
-		pMyCategoryGrid->SetMargins(0, wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));    // Scrollbar would hide last row without extra margin.
-		pMyCategoryGrid->SetDefaultCellBackgroundColour(pMyCategoryGrid->GetBackgroundColour());
-		pMyLeftVerticalLayout->Add(pMyCategoryGrid, wxSizerFlags().Expand());
+			for (int i = 0; i < 3; ++i)
+				pMyResultGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
+
+			pMyResultGrid->AutoSizeColumns();
+
+			pMyLeftVerticalLayout->Add(pMyResultGrid, wxSizerFlags().Expand());
+		}
 
 		pMyDiagram = new Diagram(this, DIAGRAM_TITLE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
@@ -320,8 +345,8 @@ namespace onest::gui
 				randomizeSeedButton->IsToggled() ? mt19937_64(random_device()()) : mt19937_64()
 			);
 
-			pMyOPANValue->SetLabelText(OPAN_TEXT + to_string(calculateOPAN(myONEST)));
-			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + to_string(calculateBandwidth(myONEST)));
+			pMyResultGrid->SetCellValue(OPAN_ROW_INDEX, 1, to_string(calculateOPAN(myONEST)));
+			pMyResultGrid->SetCellValue(BANDWIDTH_ROW_INDEX, 1, to_string(calculateBandwidth(myONEST)));
 
 			const ObserversNeeded observersNeeded = calculateObserversNeeded(myONEST);
 			wstring observersNeededText;
@@ -339,7 +364,9 @@ namespace onest::gui
 				observersNeededText = L"\u221E";    // infinity sign
 				break;
 			}
-			pMyObserversNeededValue->SetLabelText(OBSERVERS_NEEDED_TEXT + observersNeededText);
+			pMyResultGrid->SetCellValue(OBSERVERS_NEEDED_ROW_INDEX, 1, observersNeededText);
+
+			pMyResultGrid->AutoSizeColumns();
 
 			pMyDiagram->plotONEST(myONEST);
 			pMySimplifiedDiagram->plotONEST(simplifyONEST(myONEST));
@@ -349,9 +376,11 @@ namespace onest::gui
 		catch (const exception& ex)
 		{
 			myONEST.clear();
-			pMyOPANValue->SetLabelText(OPAN_TEXT + UNDEFINED_VALUE_TEXT);
-			pMyBandwidthValue->SetLabelText(BANDWIDTH_TEXT + UNDEFINED_VALUE_TEXT);
-			pMyObserversNeededValue->SetLabelText(OBSERVERS_NEEDED_TEXT + UNDEFINED_VALUE_TEXT);
+
+			for (int i = 0; i < 3; ++i)
+				pMyResultGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
+			pMyResultGrid->AutoSizeColumns();
+
 			pMyDiagram->plotONEST(ONEST());
 			pMySimplifiedDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
