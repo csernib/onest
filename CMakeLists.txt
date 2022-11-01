@@ -13,8 +13,10 @@ set(
 	src/calc/ONEST.cpp
 	src/csv/Exporter.cpp
 	src/csv/Parser.cpp
+	src/gui/CategoryGrid.cpp
 	src/gui/Diagram.cpp
 	src/gui/MainFrame.cpp
+	src/gui/ResultGrid.cpp
 	src/gui/Table.cpp
 	src/io/File.cpp
 	src/rule/parser/ParseIntervalRule.cpp
@@ -37,8 +39,10 @@ set(
 	src/csv/Sheet.h
 	src/gui/rsc/dice.h
 	src/gui/rsc/header_toggle.h
+	src/gui/CategoryGrid.h
 	src/gui/Diagram.h
 	src/gui/MainFrame.h
+	src/gui/ResultGrid.h
 	src/gui/Table.h
 	src/io/File.h
 	src/rule/parser/ParseIntervalRule.h

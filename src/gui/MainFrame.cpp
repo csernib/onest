@@ -1,5 +1,7 @@
 #include "MainFrame.h"
+#include "CategoryGrid.h"
 #include "Diagram.h"
+#include "ResultGrid.h"
 #include "Table.h"
 
 #include "../csv/Exporter.h"
@@ -9,9 +11,8 @@
 #include "../rule/Categorizer.h"
 #include "../git.h"
 
-#include <format>
-#include <numeric>
 #include <ranges>
+#include <string>
 
 #include <wx/artprov.h>
 #include <wx/filedlg.h>
@@ -27,15 +28,14 @@ using namespace onest::calc;
 using namespace onest::rule;
 using namespace std;
 
+namespace
+{
+	const string DIAGRAM_TITLE_TEXT = "ONEST plot";
+	const string SIMPLIFIED_DIAGRAM_TITLE_TEXT = "Simplified ONEST plot";
+}
+
 namespace onest::gui
 {
-	const string MainFrame::OPAN_TEXT = "OPA(N): ";
-	const string MainFrame::BANDWIDTH_TEXT = "Bandwidth: ";
-	const string MainFrame::OBSERVERS_NEEDED_TEXT = "Observers needed: ";
-	const string MainFrame::DIAGRAM_TITLE_TEXT = "ONEST plot";
-	const string MainFrame::SIMPLIFIED_DIAGRAM_TITLE_TEXT = "Simplified ONEST plot";
-	const string MainFrame::UNDEFINED_VALUE_TEXT = "N/A";
-
 	enum
 	{
 		TOOLBAR_PLOT_SAVE_BUTTON = wxID_HIGHEST + 1,
@@ -162,59 +162,26 @@ namespace onest::gui
 
 	void MainFrame::createLayoutOnTheLeft()
 	{
-		{
-			pMyLeftVerticalLayout->AddSpacer(5);
+		pMyLeftVerticalLayout->AddSpacer(5);
 
-			wxBoxSizer* categorizerLabelAndInputField = new wxBoxSizer(wxHORIZONTAL);
+		wxBoxSizer* categorizerLabelAndInputField = new wxBoxSizer(wxHORIZONTAL);
 
-			pMyCategorizerLabel = new wxStaticText(this, wxID_ANY, "Categorizer: ");
-			categorizerLabelAndInputField->Add(pMyCategorizerLabel, wxSizerFlags().CenterVertical());
+		pMyCategorizerLabel = new wxStaticText(this, wxID_ANY, "Categorizer: ");
+		categorizerLabelAndInputField->Add(pMyCategorizerLabel, wxSizerFlags().CenterVertical());
 
-			pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
-			pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
-			categorizerLabelAndInputField->Add(pMyCategorizerInputField);
+		pMyCategorizerInputField = new wxTextCtrl(this, wxID_ANY);
+		pMyCategorizerInputField->Bind(wxEVT_TEXT, [this](wxEvent&) { recalculateValues(); });
+		categorizerLabelAndInputField->Add(pMyCategorizerInputField);
 
-			pMyLeftVerticalLayout->Add(categorizerLabelAndInputField);
+		pMyLeftVerticalLayout->Add(categorizerLabelAndInputField);
 
-			pMyLeftVerticalLayout->AddSpacer(4);
-		}
+		pMyLeftVerticalLayout->AddSpacer(4);
 
-		{
-			pMyCategoryGrid = new wxGrid(this, wxID_ANY);
-			pMyCategoryGrid->CreateGrid(3, 1, wxGrid::wxGridSelectNone);
-			pMyCategoryGrid->HideColLabels();
-			pMyCategoryGrid->HideRowLabels();
-			pMyCategoryGrid->EnableEditing(false);
-			pMyCategoryGrid->EnableDragColSize(false);
-			pMyCategoryGrid->EnableDragRowSize(false);
-			pMyCategoryGrid->SetScrollbars(10, 0, 10, 0);    // Disable vertical scrollbar.
-			pMyCategoryGrid->SetMargins(0, wxSystemSettings::GetMetric(wxSYS_HSCROLL_Y));    // Scrollbar would hide last row without extra margin.
-			pMyCategoryGrid->SetDefaultCellBackgroundColour(pMyCategoryGrid->GetBackgroundColour());
-			pMyLeftVerticalLayout->Add(pMyCategoryGrid, wxSizerFlags().Expand());
-		}
+		pMyCategoryGrid = new CategoryGrid(this);
+		pMyLeftVerticalLayout->Add(pMyCategoryGrid, wxSizerFlags().Expand());
 
-		{
-			pMyResultGrid = new wxGrid(this, wxID_ANY);
-			pMyResultGrid->CreateGrid(3, 2, wxGrid::wxGridSelectNone);
-			pMyResultGrid->HideColLabels();
-			pMyResultGrid->HideRowLabels();
-			pMyResultGrid->EnableEditing(false);
-			pMyResultGrid->EnableDragColSize(false);
-			pMyResultGrid->EnableDragRowSize(false);
-			pMyResultGrid->SetScrollbars(0, 0, 0, 0);    // Disable scrollbars.
-			pMyResultGrid->SetDefaultCellBackgroundColour(pMyResultGrid->GetBackgroundColour());
-
-			pMyResultGrid->SetCellValue(OPAN_ROW_INDEX, 0, OPAN_TEXT);
-			pMyResultGrid->SetCellValue(BANDWIDTH_ROW_INDEX, 0, BANDWIDTH_TEXT);
-			pMyResultGrid->SetCellValue(OBSERVERS_NEEDED_ROW_INDEX, 0, OBSERVERS_NEEDED_TEXT);
-
-			for (int i = 0; i < 3; ++i)
-				pMyResultGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
-
-			pMyResultGrid->AutoSizeColumns();
-
-			pMyLeftVerticalLayout->Add(pMyResultGrid, wxSizerFlags().Expand());
-		}
+		pMyResultGrid = new ResultGrid(this);
+		pMyLeftVerticalLayout->Add(pMyResultGrid, wxSizerFlags().Expand());
 
 		pMyDiagram = new Diagram(this, DIAGRAM_TITLE_TEXT);
 		pMyLeftVerticalLayout->Add(pMyDiagram, wxSizerFlags(1).Expand());
@@ -336,7 +303,7 @@ namespace onest::gui
 
 			CategoryFactory categoryFactory;
 			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors(categoryFactory);
-			refreshCategoryDistributionTable(matrix, categoryFactory);
+			pMyCategoryGrid->refreshCategoryDistributionTable(matrix, categoryFactory);
 
 			// TODO: Do it in a different thread!
 			myONEST = calculateRandomPermutations(
@@ -345,28 +312,7 @@ namespace onest::gui
 				randomizeSeedButton->IsToggled() ? mt19937_64(random_device()()) : mt19937_64()
 			);
 
-			pMyResultGrid->SetCellValue(OPAN_ROW_INDEX, 1, to_string(calculateOPAN(myONEST)));
-			pMyResultGrid->SetCellValue(BANDWIDTH_ROW_INDEX, 1, to_string(calculateBandwidth(myONEST)));
-
-			const ObserversNeeded observersNeeded = calculateObserversNeeded(myONEST);
-			wstring observersNeededText;
-			switch (observersNeeded.result)
-			{
-			case ObserversNeeded::CONVERGED_AND_DEFINED:
-				observersNeededText = to_wstring(observersNeeded.numOfObservers);
-				break;
-
-			case ObserversNeeded::CONVERGED_BUT_UNKNOWN:
-				observersNeededText = L"?";
-				break;
-
-			case ObserversNeeded::DIVERGED:
-				observersNeededText = L"\u221E";    // infinity sign
-				break;
-			}
-			pMyResultGrid->SetCellValue(OBSERVERS_NEEDED_ROW_INDEX, 1, observersNeededText);
-
-			pMyResultGrid->AutoSizeColumns();
+			pMyResultGrid->updateResults(myONEST);
 
 			pMyDiagram->plotONEST(myONEST);
 			pMySimplifiedDiagram->plotONEST(simplifyONEST(myONEST));
@@ -377,66 +323,13 @@ namespace onest::gui
 		{
 			myONEST.clear();
 
-			for (int i = 0; i < 3; ++i)
-				pMyResultGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
-			pMyResultGrid->AutoSizeColumns();
-
-			pMyCategoryGrid->DeleteCols(1, -1, false);
-			pMyCategoryGrid->InsertCols(1);
-			for (int i = 0; i < 3; ++i)
-				pMyCategoryGrid->SetCellValue(i, 1, UNDEFINED_VALUE_TEXT);
+			pMyResultGrid->clear();
+			pMyCategoryGrid->clear();
 
 			pMyDiagram->plotONEST(ONEST());
 			pMySimplifiedDiagram->plotONEST(ONEST());
 			SetStatusText("Error: "s + ex.what());
 		}
-	}
-
-	void MainFrame::refreshCategoryDistributionTable(const AssessmentMatrix& matrix, const CategoryFactory& categoryFactory)
-	{
-		assert(pMyCategoryGrid);
-
-		auto categoryHasher = categoryFactory.createHasher();
-		unordered_map<Category, unsigned, decltype(categoryHasher)> countByCategories(categoryFactory.getNumberOfCategories(), categoryHasher);
-
-		for (unsigned i = 0; i < matrix.getTotalNumberOfCases(); ++i)
-		{
-			for (unsigned j = 0; j < matrix.getTotalNumberOfObservers(); ++j)
-				++countByCategories[matrix.get(j, i)];
-		}
-
-		vector<pair<Category, unsigned>> sortedCounts(countByCategories.begin(), countByCategories.end());
-		ranges::sort(sortedCounts, [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
-
-		const unsigned total = accumulate(
-			sortedCounts.begin(),
-			sortedCounts.end(),
-			0u,
-			[](unsigned sum, const auto& categoryAndCount) { return sum + categoryAndCount.second; }
-		);
-
-		pMyCategoryGrid->DeleteCols(0, -1, false);
-		pMyCategoryGrid->InsertCols(0, countByCategories.size() + 1, false);
-
-		pMyCategoryGrid->BeginBatch();
-
-		pMyCategoryGrid->SetCellValue(0, 0, "Category:");
-		pMyCategoryGrid->SetCellValue(1, 0, "Count:");
-		pMyCategoryGrid->SetCellValue(2, 0, "Percentage:");
-
-		int col = 1;
-		for (const auto& [category, count] : sortedCounts)
-		{
-			const string categoryText = categoryFactory.findCategoryText(category);
-			pMyCategoryGrid->SetCellValue(0, col, categoryText.empty() ? "<empty cell>" : categoryText);
-			pMyCategoryGrid->SetCellValue(1, col, to_string(count));
-			pMyCategoryGrid->SetCellValue(2, col, format("{:.2f}%", (double)count / total * 100.0));
-			++col;
-		}
-
-		pMyCategoryGrid->AutoSizeColumns();
-
-		pMyCategoryGrid->EndBatch();
 	}
 
 	AssessmentMatrix MainFrame::createAssessmentMatrixAndUpdateCellColors(CategoryFactory& categoryFactory)
