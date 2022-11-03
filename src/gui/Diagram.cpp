@@ -2,7 +2,10 @@
 #include "../Exception.h"
 
 #include <wx/dcbuffer.h>
+#include <wx/filedlg.h>
 #include <wx/image.h>
+#include <wx/menu.h>
+#include <wx/msgdlg.h>
 
 #include <cassert>
 #include <cmath>
@@ -25,6 +28,8 @@ namespace
 
 		return false;
 	}
+
+	const int CONTEXT_MENU_SAVE_AS_PNG_ID = wxID_HIGHEST + 1;
 }
 
 namespace onest::gui
@@ -35,6 +40,15 @@ namespace onest::gui
 	{
 		Bind(wxEVT_PAINT, &Diagram::handlePaintEvent, this);
 		Bind(wxEVT_SIZE, [this](wxSizeEvent&) { Refresh(); });
+
+		Bind(wxEVT_CONTEXT_MENU, [this](wxContextMenuEvent& event)
+		{
+			wxMenu popupMenu;
+			popupMenu.Append(CONTEXT_MENU_SAVE_AS_PNG_ID, "&Save as PNG image...");
+			PopupMenu(&popupMenu);
+		});
+
+		Bind(wxEVT_MENU, [this](wxEvent&) { showPlotSaveDialog(); }, CONTEXT_MENU_SAVE_AS_PNG_ID);
 
 		SetBackgroundStyle(wxBG_STYLE_PAINT);
 	}
@@ -96,6 +110,30 @@ namespace onest::gui
 		drawObserverIndexes(dc, topLeft, bottomRight, scaleFactorX);
 		drawONESTPlot(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
 		drawTitle(dc, topLeft, bottomRight, scaleFactorX, scaleFactorY);
+	}
+
+	void Diagram::showPlotSaveDialog()
+	{
+		if (myONEST.empty())
+		{
+			wxMessageBox("Nothing is calculated yet, so there is nothing to save.", "Information", wxICON_INFORMATION | wxOK);
+			return;
+		}
+
+		wxFileDialog* fileSaveDialog = new wxFileDialog(
+			this,
+			"Save ONEST plot...",
+			wxEmptyString,
+			wxEmptyString,
+			"PNG files|*.png",
+			wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
+			wxDefaultPosition
+		);
+		if (fileSaveDialog->ShowModal() == wxID_OK)
+		{
+			renderToBitmap().SaveFile(fileSaveDialog->GetPath(), wxBITMAP_TYPE_PNG);
+		}
+		fileSaveDialog->Destroy();
 	}
 
 	std::pair<wxPoint, wxPoint> Diagram::calculateTopLeftAndBottomRight(wxDC& dc) const

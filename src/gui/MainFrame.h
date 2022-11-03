@@ -32,7 +32,6 @@ namespace onest::gui
 
 		void showLoadFileDialog();
 		void showSaveFileDialog();
-		void showPlotSaveDialog();
 
 		void recalculateValues();
 		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors(calc::CategoryFactory& categoryFactory);

@@ -22,6 +22,8 @@ namespace onest::gui
 		void handlePaintEvent(wxPaintEvent& event);
 		void render(wxDC& dc, wxPoint topLeft, wxPoint bottomRight);
 
+		void showPlotSaveDialog();
+
 		std::pair<wxPoint, wxPoint> calculateTopLeftAndBottomRight(wxDC& dc) const;
 
 		void drawBackgroundAndBorders(wxDC& dc, wxPoint topLeft, wxPoint bottomRight) const;
