@@ -3,6 +3,7 @@
 #include "Diagram.h"
 #include "ResultGrid.h"
 #include "Table.h"
+#include "common.h"
 
 #include "../csv/Exporter.h"
 #include "../csv/Parser.h"
@@ -346,8 +347,7 @@ namespace onest::gui
 
 		AssessmentMatrix matrix(numberOfObservers, numberOfCases);
 
-		// TODO: Exception safety! (at the other places too!)
-		pMyTable->BeginBatch();
+		auto batchLock = autoCloseBatchUpdate(pMyTable);
 		for (int i = 0; i < numberOfRows; ++i)
 		{
 			for (int j = 0, observerIndex = 0; j < numberOfColumns; ++j)
@@ -367,7 +367,6 @@ namespace onest::gui
 					pMyTable->resetCellHue(i, j);
 			}
 		}
-		pMyTable->EndBatch();
 
 		return matrix;
 	}

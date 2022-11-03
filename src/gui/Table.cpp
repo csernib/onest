@@ -1,4 +1,5 @@
 #include "Table.h"
+#include "common.h"
 
 #include <wx/image.h>
 
@@ -84,7 +85,7 @@ namespace onest::gui
 	{
 		if (firstRowAsHeader)
 		{
-			BeginBatch();
+			auto batchLock = autoCloseBatchUpdate(this);
 			for (int i = 0; i < this->GetNumberCols(); ++i)
 			{
 				SetColLabelValue(i, GetCellValue(0, i));
@@ -94,11 +95,10 @@ namespace onest::gui
 			// TODO: This is problematic. If there was a header originally, then we will get a scrollbar when the row is readded.
 			//       Otherwise an empty "dummy" row is left there.
 			DeleteRows();
-			EndBatch();
 		}
 		else
 		{
-			BeginBatch();
+			auto batchLock = autoCloseBatchUpdate(this);
 			InsertRows();
 			for (int i = 0; i < this->GetNumberCols(); ++i)
 			{
@@ -109,7 +109,6 @@ namespace onest::gui
 				SetColLabelValue(i, wxString(static_cast<char>('A' + i)));
 				addColumnTickboxCharacters(i);
 			}
-			EndBatch();
 		}
 
 		myFirstRowIsHeader = firstRowAsHeader;
@@ -126,14 +125,13 @@ namespace onest::gui
 
 		const bool columnIsEnabled = myColumnEnabledStatuses[column];
 
-		BeginBatch();
+		auto batchLock = autoCloseBatchUpdate(this);
 		refreshColumnTickboxStatus(column);
 		for (int i = 0; i < GetNumberRows(); ++i)
 		{
 			SetCellTextColour(i, column, columnIsEnabled ? black : lightGrey);
 			SetCellBackgroundColour(i, column, columnIsEnabled ? white : darkGrey);
 		}
-		EndBatch();
 	}
 
 	void Table::addColumnTickboxCharacters(int column)

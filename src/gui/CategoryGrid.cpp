@@ -1,4 +1,5 @@
 #include "CategoryGrid.h"
+#include "common.h"
 
 #include "../calc/AssessmentMatrix.h"
 #include "../calc/Category.h"
@@ -52,7 +53,7 @@ namespace onest::gui
 		DeleteCols(0, -1, false);
 		InsertCols(0, countByCategories.size() + 1, false);
 
-		BeginBatch();
+		auto batchLock = autoCloseBatchUpdate(this);
 
 		SetCellValue(0, 0, "Category:");
 		SetCellValue(1, 0, "Count:");
@@ -69,8 +70,6 @@ namespace onest::gui
 		}
 
 		AutoSizeColumns();
-
-		EndBatch();
 	}
 
 	void CategoryGrid::clear()

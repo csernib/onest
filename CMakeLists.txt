@@ -44,6 +44,7 @@ set(
 	src/gui/MainFrame.h
 	src/gui/ResultGrid.h
 	src/gui/Table.h
+	src/gui/common.h
 	src/io/File.h
 	src/rule/parser/ParseIntervalRule.h
 	src/rule/parser/ParseLiteralRule.h
