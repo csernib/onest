@@ -34,20 +34,27 @@ namespace
 namespace onest::rule::parser
 {
 	const regex INTERVAL_REGEX = regex(
-		R"(^(-?\d+(?:\.\d+)?)<(=)?<(=)?(-?\d+(?:\.\d+)?)$)"   // NUMBER<(=)<(=)NUMBER
-		                                                      //   Capture groups:
-		                                                      //    - 1: first number
-		                                                      //    - 2: first equal sign (optional)
-		                                                      //    - 3: second equal sign (optional)
-		                                                      //    - 4: second number
-		R"(|^(-?\d+(?:\.\d+)?)<(=)?$)"                        // NUMBER<(=)
-		                                                      //   Capture groups:
-		                                                      //    - 5: number
-		                                                      //    - 6: equal sign (optional)
-		R"(|^<(=)?(-?\d+(?:\.\d+)?)$)",                       // <(=)NUMBER
-		                                                      //   Capture groups:
-		                                                      //    - 7: equal sign (optional)
-		                                                      //    - 8: number
+		R"(^(-?\d+(?:\.\d+)?)(<|>)(=)?(?:X|x)?(<|>)(=)?(-?\d+(?:\.\d+)?)$)"   // NUMBER<(=)(X)<(=)NUMBER
+		                                                                      // NUMBER>(=)(X)>(=)NUMBER
+		                                                                      //   Capture groups:
+		                                                                      //    - 1: first number
+		                                                                      //    - 2: first less-than or greater-than sign
+		                                                                      //    - 3: first equal sign (optional)
+		                                                                      //    - 4: second less-than or greater-than sign
+		                                                                      //    - 5: second equal sign (optional)
+		                                                                      //    - 6: second number
+		R"(|^(-?\d+(?:\.\d+)?)(<|>)(=)?(?:X|x)?$)"                            // NUMBER<(=)(X)
+		                                                                      // NUMBER>(=)(X)
+		                                                                      //   Capture groups:
+		                                                                      //    - 7: number
+		                                                                      //    - 8: less-than or greater-than sign
+		                                                                      //    - 9: equal sign (optional)
+		R"(|^(?:X|x)?(<|>)(=)?(-?\d+(?:\.\d+)?)$)",                           // (X)<(=)NUMBER
+		                                                                      // (X)>(=)NUMBER
+		                                                                      //   Capture groups:
+		                                                                      //    - 10: less-than or greater-than sign
+		                                                                      //    - 11: equal sign (optional)
+		                                                                      //    - 12: number
 		regex_constants::optimize
 	);
 
@@ -56,35 +63,56 @@ namespace onest::rule::parser
 		cmatch match;
 		if (regex_match(category.data(), category.data() + category.size(), match, INTERVAL_REGEX))
 		{
-			assert(match.size() == 9);
+			assert(match.size() == 13);
 
 			if (match[1].matched)
 			{
-				Threshold lowerBound = createThreshold(match[1], match[2]);
-				Threshold upperBound = createThreshold(match[4], match[3]);
+				const char firstRelationalSymbol = match[2].first[0];
+				const char secondRelationalSymbol = match[4].first[0];
 
-				if (!lowerBound.enabled || !upperBound.enabled)
+				if (firstRelationalSymbol != secondRelationalSymbol)
 					return parseLiteralRule(category);
+
+				const Threshold threshold1 = createThreshold(match[1], match[3]);
+				const Threshold threshold2 = createThreshold(match[6], match[5]);
+
+				if (!threshold1.enabled || !threshold2.enabled)
+					return parseLiteralRule(category);
+
+				const Threshold& lowerBound = firstRelationalSymbol == '<' ? threshold1 : threshold2;
+				const Threshold& upperBound = firstRelationalSymbol == '<' ? threshold2 : threshold1;
 
 				return make_shared<IntervalRule>(category, lowerBound, upperBound);
 			}
 
-			if (match[5].matched)
+			if (match[7].matched)
 			{
-				Threshold lowerBound = createThreshold(match[5], match[6]);
-				if (!lowerBound.enabled)
+				const char relationalSymbol = match[8].first[0];
+
+				const Threshold threshold = createThreshold(match[7], match[9]);
+
+				if (!threshold.enabled)
 					return parseLiteralRule(category);
 
-				return make_shared<IntervalRule>(category, lowerBound, Threshold());
+				const Threshold& lowerBound = relationalSymbol == '<' ? threshold : Threshold();
+				const Threshold& upperBound = relationalSymbol == '<' ? Threshold() : threshold;
+
+				return make_shared<IntervalRule>(category, lowerBound, upperBound);
 			}
 
-			if (match[8].matched)
+			if (match[12].matched)
 			{
-				Threshold upperBound = createThreshold(match[8], match[7]);
-				if (!upperBound.enabled)
+				const char relationalSymbol = match[10].first[0];
+
+				const Threshold threshold = createThreshold(match[12], match[11]);
+
+				if (!threshold.enabled)
 					return parseLiteralRule(category);
 
-				return make_shared<IntervalRule>(category, Threshold(), upperBound);
+				const Threshold& lowerBound = relationalSymbol == '<' ? Threshold() : threshold;
+				const Threshold& upperBound = relationalSymbol == '<' ? threshold : Threshold();
+
+				return make_shared<IntervalRule>(category, lowerBound, upperBound);
 			}
 		}
 
