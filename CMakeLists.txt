@@ -40,6 +40,7 @@ set(
 	src/gui/rsc/dice.h
 	src/gui/rsc/header_toggle.h
 	src/gui/CategoryGrid.h
+	src/gui/ColumnNameGenerator.h
 	src/gui/Diagram.h
 	src/gui/MainFrame.h
 	src/gui/ResultGrid.h

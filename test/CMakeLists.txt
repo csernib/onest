@@ -10,6 +10,7 @@ set(
 	main.cpp
 	Test_AssessmentMatrix.cpp
 	Test_CategoryFactory.cpp
+	Test_ColumnNameGenerator.cpp
 	Test_Exporter.cpp
 	Test_File.cpp
 	Test_ONEST.cpp

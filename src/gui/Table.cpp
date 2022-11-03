@@ -1,4 +1,6 @@
 #include "Table.h"
+
+#include "ColumnNameGenerator.h"
 #include "common.h"
 
 #include <wx/image.h>
@@ -104,9 +106,7 @@ namespace onest::gui
 			{
 				removeColumnTickboxCharacters(i);
 				SetCellValue(0, i, GetColLabelValue(i));
-
-				// TODO: What if we are out of range (more than Z number of columns)?
-				SetColLabelValue(i, wxString(static_cast<char>('A' + i)));
+				SetColLabelValue(i, ColumnNameGenerator::generateNameForColumn(i));
 				addColumnTickboxCharacters(i);
 			}
 		}
