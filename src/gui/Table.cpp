@@ -94,8 +94,6 @@ namespace onest::gui
 				addColumnTickboxCharacters(i);
 			}
 
-			// TODO: This is problematic. If there was a header originally, then we will get a scrollbar when the row is readded.
-			//       Otherwise an empty "dummy" row is left there.
 			DeleteRows();
 		}
 		else
