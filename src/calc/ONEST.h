@@ -2,7 +2,10 @@
 
 #include "AssessmentMatrix.h"
 
+#include <exception>
+#include <functional>
 #include <random>
+#include <thread>
 
 
 namespace onest::calc
@@ -10,6 +13,10 @@ namespace onest::calc
 	typedef double number_t;
 	typedef std::vector<number_t> OPAC;
 	typedef std::vector<OPAC> ONEST;
+
+	typedef std::function<void(ONEST)> SuccessCallback;
+	typedef std::function<void(std::exception_ptr)> ErrorCallback;
+	typedef std::mt19937_64 RNG;
 
 	struct ObserversNeeded
 	{
@@ -24,8 +31,15 @@ namespace onest::calc
 		number_t opaValue;
 	};
 
-	ONEST calculateAllPermutations(const AssessmentMatrix& matrix);
-	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations, std::mt19937_64 rng);
+	std::jthread calculateAllPermutations(AssessmentMatrix matrix, SuccessCallback onSuccess, ErrorCallback onError);
+
+	std::jthread calculateRandomPermutations(
+		AssessmentMatrix matrix,
+		unsigned numberOfPermutations,
+		RNG rng,
+		SuccessCallback onSuccess,
+		ErrorCallback onError
+	);
 
 	ONEST simplifyONEST(const ONEST& onest);
 

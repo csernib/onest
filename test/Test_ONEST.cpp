@@ -4,6 +4,7 @@
 #include "test.h"
 
 #include <algorithm>
+#include <future>
 
 
 #define TAG "[ONEST] "
@@ -66,6 +67,29 @@ namespace
 
 		return opacs;
 	}
+
+	template<class AsyncFunction, class... Args>
+	ONEST synchronize(AsyncFunction asyncFunction, Args&&... args)
+	{
+		promise<ONEST> promise;
+		jthread thread = asyncFunction(
+			forward<Args>(args)...,
+			[&](ONEST onest) { promise.set_value(move(onest)); },
+			[&](exception_ptr e) { promise.set_exception(e); }
+		);
+		thread.join();
+		return promise.get_future().get();
+	}
+
+	ONEST calculateAllPermutations(const AssessmentMatrix& matrix)
+	{
+		return synchronize(onest::calc::calculateAllPermutations, matrix);
+	}
+
+	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations, RNG rng)
+	{
+		return synchronize(onest::calc::calculateRandomPermutations, matrix, numberOfPermutations, rng);
+	}
 }
 
 namespace onest::test
@@ -97,7 +121,7 @@ CASE(TAG "ONEST for random permutations contains the correct OPACs.")
 	vector<OPAC> expectedOPACs = generateExpectedOPACs();
 
 	// When
-	const ONEST onest = calculateRandomPermutations(matrix, 2, mt19937_64());
+	const ONEST onest = calculateRandomPermutations(matrix, 2, RNG());
 
 	// Then
 	EXPECT(onest.size() == 2);
@@ -111,7 +135,7 @@ CASE(TAG "ONEST for 0 random permutations returns empty container.")
 	const AssessmentMatrix matrix = generateTestMatrix();
 
 	// When
-	const ONEST onest = calculateRandomPermutations(matrix, 0, mt19937_64());
+	const ONEST onest = calculateRandomPermutations(matrix, 0, RNG());
 
 	// Then
 	EXPECT(onest.empty());

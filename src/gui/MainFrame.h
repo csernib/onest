@@ -5,6 +5,8 @@
 #include "../calc/ONEST.h"
 #include "../csv/Sheet.h"
 
+#include <thread>
+
 #include <wx/checkbox.h>
 #include <wx/frame.h>
 #include <wx/sizer.h>
@@ -34,6 +36,9 @@ namespace onest::gui
 		void showSaveFileDialog();
 
 		void recalculateValues();
+		void handleCalculationSuccess(const wxThreadEvent& event);
+		void handleCalculationFailure(const wxThreadEvent& event);
+		void handleError(const std::string& errorMessage);
 		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors(calc::CategoryFactory& categoryFactory);
 
 		calc::ONEST myONEST;
@@ -50,5 +55,9 @@ namespace onest::gui
 
 		wxStaticText* pMyCategorizerLabel = nullptr;
 		wxTextCtrl* pMyCategorizerInputField = nullptr;
+
+		// Leave it as the last member variable to ensure that
+		// the thread joins before the frame is destructed.
+		std::jthread myCalculationThread;
 	};
 }

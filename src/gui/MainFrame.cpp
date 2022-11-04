@@ -42,9 +42,15 @@ namespace onest::gui
 		TOOLBAR_HEADER_BUTTON
 	};
 
+	wxDEFINE_EVENT(EVENT_CALCULATION_SUCCESS, wxThreadEvent);
+	wxDEFINE_EVENT(EVENT_CALCULATION_FAILURE, wxThreadEvent);
+
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
 	{
 		SetTitle("ONEST Pre-alpha    |  " + git::getVersionInfo());
+
+		Bind(EVENT_CALCULATION_SUCCESS, &MainFrame::handleCalculationSuccess, this);
+		Bind(EVENT_CALCULATION_FAILURE, &MainFrame::handleCalculationFailure, this);
 
 		CreateStatusBar();
 
@@ -261,6 +267,7 @@ namespace onest::gui
 
 	void MainFrame::recalculateValues()
 	{
+		DeletePendingEvents();
 		SetStatusText("Calculating ONEST...");
 		myONEST.clear();
 		try
@@ -272,31 +279,68 @@ namespace onest::gui
 			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors(categoryFactory);
 			pMyCategoryGrid->refreshCategoryDistributionTable(matrix, categoryFactory);
 
-			// TODO: Do it in a different thread!
-			myONEST = calculateRandomPermutations(
+			myCalculationThread = calculateRandomPermutations(
 				matrix,
 				100,
-				randomizeSeedButton->IsToggled() ? mt19937_64(random_device()()) : mt19937_64()
+				randomizeSeedButton->IsToggled() ? RNG(random_device()()) : RNG(),
+				[this](ONEST onest)
+				{
+					wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_SUCCESS);
+					event->SetPayload(onest);
+					QueueEvent(event);
+				},
+				[this](exception_ptr exception)
+				{
+					wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_FAILURE);
+					event->SetPayload(exception);
+					QueueEvent(event);
+				}
 			);
-
-			pMyResultGrid->updateResults(myONEST);
-
-			pMyDiagram->plotONEST(myONEST);
-			pMySimplifiedDiagram->plotONEST(simplifyONEST(myONEST));
-
-			SetStatusText("Ready");
 		}
 		catch (const exception& ex)
 		{
-			myONEST.clear();
-
-			pMyResultGrid->clear();
-			pMyCategoryGrid->clear();
-
-			pMyDiagram->plotONEST(ONEST());
-			pMySimplifiedDiagram->plotONEST(ONEST());
-			SetStatusText("Error: "s + ex.what());
+			handleError(ex.what());
 		}
+	}
+
+	void MainFrame::handleCalculationSuccess(const wxThreadEvent& event)
+	{
+		assert(event.GetEventType() == EVENT_CALCULATION_SUCCESS);
+
+		myONEST = event.GetPayload<ONEST>();
+
+		pMyResultGrid->updateResults(myONEST);
+
+		pMyDiagram->plotONEST(myONEST);
+		pMySimplifiedDiagram->plotONEST(simplifyONEST(myONEST));
+
+		SetStatusText("Ready");
+	}
+
+	void MainFrame::handleCalculationFailure(const wxThreadEvent& event)
+	{
+		assert(event.GetEventType() == EVENT_CALCULATION_FAILURE);
+
+		try
+		{
+			rethrow_exception(event.GetPayload<exception_ptr>());
+		}
+		catch (const exception& ex)
+		{
+			handleError(ex.what());
+		}
+	}
+
+	void MainFrame::handleError(const std::string& errorMessage)
+	{
+		myONEST.clear();
+
+		pMyResultGrid->clear();
+		pMyCategoryGrid->clear();
+
+		pMyDiagram->plotONEST(ONEST());
+		pMySimplifiedDiagram->plotONEST(ONEST());
+		SetStatusText("Error: "s + errorMessage);
 	}
 
 	AssessmentMatrix MainFrame::createAssessmentMatrixAndUpdateCellColors(CategoryFactory& categoryFactory)

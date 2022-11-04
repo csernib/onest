@@ -14,6 +14,8 @@ namespace
 {
 	using namespace onest::calc;
 
+	class ThreadInterrupted {};
+
 	typedef vector<unsigned> ObserverPermutation;
 
 	ObserverPermutation generateFirstPermutation(unsigned numOfObservers)
@@ -23,11 +25,14 @@ namespace
 		return permutation;
 	}
 
-	number_t calculateOPA(const AssessmentMatrix& matrix, const ObserverPermutation& permutation, size_t numOfObservers)
+	number_t calculateOPA(const stop_token& stoken, const AssessmentMatrix& matrix, const ObserverPermutation& permutation, size_t numOfObservers)
 	{
 		unsigned totalEqual = 0;
 		for (unsigned i = 0; i < matrix.getTotalNumberOfCases(); ++i)
 		{
+			if (stoken.stop_requested())
+				throw ThreadInterrupted();
+
 			for (unsigned j = 0; j < numOfObservers - 1; ++j)
 			{
 				// No need to compare every category to every other category in this permutation.
@@ -47,24 +52,24 @@ namespace
 		return static_cast<double>(totalEqual) / static_cast<double>(matrix.getTotalNumberOfCases());
 	}
 
-	OPAC calculateOPAC(const AssessmentMatrix& matrix, const ObserverPermutation& permutation)
+	OPAC calculateOPAC(const stop_token& stoken, const AssessmentMatrix& matrix, const ObserverPermutation& permutation)
 	{
 		const size_t totalNumberOfObservers = permutation.size();
 
 		OPAC opac;
 		opac.reserve(totalNumberOfObservers - 1);
 		for (size_t i = 2; i <= totalNumberOfObservers; ++i)
-			opac.emplace_back(calculateOPA(matrix, permutation, i));
+			opac.emplace_back(calculateOPA(stoken, matrix, permutation, i));
 
 		return opac;
 
 	}
 
-	ONEST calculateONEST(const AssessmentMatrix& matrix, set<ObserverPermutation> observerPermutations)
+	ONEST calculateONEST(const stop_token& stoken, const AssessmentMatrix& matrix, set<ObserverPermutation> observerPermutations)
 	{
 		ONEST onest;
 		for (const ObserverPermutation& permutation : observerPermutations)
-			onest.emplace_back(calculateOPAC(matrix, permutation));
+			onest.emplace_back(calculateOPAC(stoken, matrix, permutation));
 
 		return onest;
 	}
@@ -112,19 +117,8 @@ namespace
 
 		return minOPAC;
 	}
-}
 
-namespace onest::test
-{
-	number_t median(const vector<number_t>& input)
-	{
-		return ::median(input);
-	}
-}
-
-namespace onest::calc
-{
-	ONEST calculateAllPermutations(const AssessmentMatrix& matrix)
+	ONEST calculateAllPermutationsInThread(const stop_token& stoken, const AssessmentMatrix& matrix)
 	{
 		if (matrix.getTotalNumberOfObservers() == 1)
 			return ONEST{ { number_t(1.0) } };
@@ -138,16 +132,16 @@ namespace onest::calc
 		}
 		while (next_permutation(permutation.begin(), permutation.end()));
 
-		return calculateONEST(matrix, move(allPermutations));
+		return calculateONEST(stoken, matrix, move(allPermutations));
 	}
 
-	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations, mt19937_64 rng)
+	ONEST calculateRandomPermutationsInThread(const stop_token& stoken, const AssessmentMatrix& matrix, unsigned numberOfPermutations, RNG rng)
 	{
 		if (numberOfPermutations == 0)
 			return ONEST();
 
 		if (numberOfPermutations >= factorial(matrix.getTotalNumberOfObservers()))
-			return calculateAllPermutations(matrix);
+			return calculateAllPermutationsInThread(stoken, matrix);
 
 		set<ObserverPermutation> randomPermutations;
 
@@ -163,7 +157,74 @@ namespace onest::calc
 			randomPermutations.emplace(permutation);
 		}
 
-		return calculateONEST(matrix, move(randomPermutations));
+		return calculateONEST(stoken, matrix, move(randomPermutations));
+	}
+}
+
+namespace onest::test
+{
+	number_t median(const vector<number_t>& input)
+	{
+		return ::median(input);
+	}
+}
+
+namespace onest::calc
+{
+	jthread calculateAllPermutations(AssessmentMatrix matrix, SuccessCallback onSuccess, ErrorCallback onError)
+	{
+		return jthread([
+			matrix = move(matrix),
+			onSuccess = move(onSuccess),
+			onError = move(onError)
+		](stop_token stoken)
+		{
+			ONEST result;
+			try
+			{
+				result = calculateAllPermutationsInThread(stoken, matrix);
+			}
+			catch (const ThreadInterrupted&)
+			{
+				return;
+			}
+			catch (...)
+			{
+				onError(current_exception());
+				return;
+			}
+
+			onSuccess(move(result));
+		});
+	}
+
+	jthread calculateRandomPermutations(AssessmentMatrix matrix, unsigned numberOfPermutations, RNG rng, SuccessCallback onSuccess, ErrorCallback onError)
+	{
+		return jthread([
+			matrix = move(matrix),
+			numberOfPermutations,
+			rng = move(rng),
+			onSuccess = move(onSuccess),
+			onError = move(onError)
+		](stop_token stoken)
+		{
+			ONEST result;
+			try
+			{
+				result = calculateRandomPermutationsInThread(stoken, matrix, numberOfPermutations, move(rng));
+			}
+			catch (const ThreadInterrupted&)
+			{
+				return;
+			}
+			catch (...)
+			{
+				onError(current_exception());
+				return;
+			}
+
+			onSuccess(move(result));
+		});
 	}
 
 	ONEST simplifyONEST(const ONEST& onest)
