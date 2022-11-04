@@ -183,6 +183,44 @@ CASE(TAG "Empty quote is parsed as empty string.")
 	EXPECT(parsed[0][1] == "");
 }
 
+CASE(TAG "Ending a quote at end of line works.")
+{
+	// Given
+	string csv = "a,\"b\"\nc,d";
+
+	// When
+	auto parsed = parseSheet(csv, ',', '"');
+
+	// Then
+	EXPECT(parsed.size() == 2);
+
+	EXPECT(parsed[0].size() == 2);
+	EXPECT(parsed[0][0] == "a");
+	EXPECT(parsed[0][1] == "b");
+
+	EXPECT(parsed[1].size() == 2);
+	EXPECT(parsed[1][0] == "c");
+	EXPECT(parsed[1][1] == "d");
+}
+
+CASE(TAG "Ending a quote at end of cell works.")
+{
+	// Given
+	string csv = "a,\"b\",c,d";
+
+	// When
+	auto parsed = parseSheet(csv, ',', '"');
+
+	// Then
+	EXPECT(parsed.size() == 1);
+
+	EXPECT(parsed[0].size() == 4);
+	EXPECT(parsed[0][0] == "a");
+	EXPECT(parsed[0][1] == "b");
+	EXPECT(parsed[0][2] == "c");
+	EXPECT(parsed[0][3] == "d");
+}
+
 CASE(TAG "Quotes allow for separators within the quote.")
 {
 	// Given
@@ -309,7 +347,7 @@ CASE(TAG "Ending the input without a closing quote on a quoted quote causes a Pa
 	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
-CASE(TAG "Mixing unquoted text before quoted value is disallowed.")
+CASE(TAG "Mixing unquoted text before quoted value at start of text is disallowed.")
 {
 	// Given
 	string csv = "a\"bc\"";
@@ -318,10 +356,46 @@ CASE(TAG "Mixing unquoted text before quoted value is disallowed.")
 	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
 }
 
-CASE(TAG "Mixing unquoted text after quoted value is disallowed.")
+CASE(TAG "Mixing unquoted text before quoted value at start of line is disallowed.")
+{
+	// Given
+	string csv = "x,y\na\"bc\"";
+
+	// When, then
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
+}
+
+CASE(TAG "Mixing unquoted text before quoted value at start of cell is disallowed.")
+{
+	// Given
+	string csv = "x,a\"bc\"";
+
+	// When, then
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
+}
+
+CASE(TAG "Mixing unquoted text after quoted value at end of text is disallowed.")
 {
 	// Given
 	string csv = "\"ab\"c";
+
+	// When, then
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
+}
+
+CASE(TAG "Mixing unquoted text after quoted value at end of line is disallowed.")
+{
+	// Given
+	string csv = "\"ab\"c\nx,y";
+
+	// When, then
+	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);
+}
+
+CASE(TAG "Mixing unquoted text after quoted value at end of cell is disallowed.")
+{
+	// Given
+	string csv = "\"ab\"c,x";
 
 	// When, then
 	EXPECT_THROWS_AS(parseSheet(csv, ',', '"'), ParserException);

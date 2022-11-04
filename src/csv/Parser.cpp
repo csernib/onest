@@ -43,7 +43,7 @@ namespace onest::csv
 				{
 					if (nextChar != quoteChar)
 					{
-						if (nextChar != separator && i + 1 != csvData.size())
+						if (nextChar != separator && nextChar != '\r' && nextChar != '\n' && i + 1 != csvData.size())
 							throw ParserException("Could not load CSV: quoted and unquoted text mixed within the same cell");
 
 						quoteInProgress = false;
