@@ -1,8 +1,7 @@
 #include "Parser.h"
 #include "ParserException.h"
 
-#include <format>
-#include <regex>
+#include <sstream>
 
 
 using namespace std;
@@ -11,42 +10,87 @@ namespace onest::csv
 {
 	Sheet parseSheet(const std::string& csvData, char separator, char quoteChar) try
 	{
-		// TODO: It is possible to get a stack overflow on Windows (VS 2022) if the input is long enough and a quote
-		//       is left open. Fix this!
-		const regex csvRegex(
-			format(R"__((?:{1}((?:[^{1}]|{1}{1})*){1}|([^{0}{1}]*?))(?:({0})?(\r\n|\n|\r|$)|{0}))__", separator, quoteChar),
-			regex_constants::optimize
-		);
-		const regex quoteRegex(format("{0}{0}", quoteChar), regex_constants::optimize);
-		const string quoteString(&quoteChar, &quoteChar + 1);
+		if (csvData.empty())
+			return Sheet();
 
 		Row row;
 		Sheet sheet;
-		bool matched = false;
-		for (auto it = sregex_iterator(csvData.begin(), csvData.end(), csvRegex, regex_constants::match_not_null); it != sregex_iterator(); ++it)
+		stringstream cell;
+
+		auto endCell = [&]
 		{
-			const smatch& match = *it;
+			row.push_back(cell.str());
+			cell = stringstream();
+		};
 
-			if (match.prefix().matched)
-				throw ParserException("Could not load CSV: invalid syntax");
+		auto endRow = [&]
+		{
+			endCell();
+			sheet.push_back(move(row));
+			row = Row();
+		};
 
-			string sm1 = regex_replace(match[1].str(), quoteRegex, quoteString);
-			string sm2 = match[2];
-			row.push_back(move(sm1) + move(sm2));
+		bool quoteInProgress = false;
 
-			if (match[3].matched)
-				row.push_back("");
+		for (size_t i = 0; i < csvData.size();)
+		{
+			const char currentChar = csvData[i];
+			const char nextChar = csvData[i + 1];
 
-			if (match[4].matched)
+			if (currentChar == quoteChar)
 			{
-				sheet.push_back(row);
-				row.clear();
-				matched = !match.suffix().matched;
+				if (quoteInProgress)
+				{
+					if (nextChar != quoteChar)
+					{
+						if (nextChar != separator && i + 1 != csvData.size())
+							throw ParserException("Could not load CSV: quoted and unquoted text mixed within the same cell");
+
+						quoteInProgress = false;
+						++i;
+					}
+					else
+					{
+						cell.put(currentChar);
+						i += 2;
+					}
+				}
+				else
+				{
+					if (cell.rdbuf()->in_avail() > 0)
+						throw ParserException("Could not load CSV: quoted and unquoted text mixed within the same cell");
+
+					quoteInProgress = true;
+					++i;
+				}
+			}
+			else if (!quoteInProgress && currentChar == '\r' && nextChar == '\n')
+			{
+				endRow();
+				i += 2;
+			}
+			else if (!quoteInProgress && (currentChar == '\n' || currentChar == '\r'))
+			{
+				endRow();
+				++i;
+			}
+			else if (!quoteInProgress && currentChar == separator)
+			{
+				endCell();
+				++i;
+			}
+			else
+			{
+				cell.put(currentChar);
+				++i;
 			}
 		}
 
-		if (!matched && !csvData.empty())
-			throw ParserException("Could not load CSV: invalid syntax");
+		if (!csvData.ends_with("\r\n") && !csvData.ends_with('\n') && !csvData.ends_with('\r'))
+			endRow();
+
+		if (quoteInProgress)
+			throw ParserException("Could not load CSV: missing closing quote sign");
 
 		return sheet;
 	}
