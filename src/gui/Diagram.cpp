@@ -140,12 +140,21 @@ namespace onest::gui
 	{
 		const int borderWidthBasis  = 20;
 
-		// TODO: Instead get a sequence of the texts already (to be used for rendering too),
-		//       and calculate max extent based on that.
-		const int borderWidthLeft   = borderWidthBasis + dc.GetTextExtent("0.5").x + 2;
+		// Visually it is (subjectively) more pleasing if the left border is slightly thinner,
+		// since the line of the Y axis is more to the right anyway.
+		const int borderWidthLeftBasis = borderWidthBasis - 4;
+
+		const char* exampleMaxWidthOPAValue = "0.55";
+		const char* exampleMaxHeightObserverCount = "0";
+
+		const int textWidthForOPAAxis = dc.GetTextExtent(exampleMaxWidthOPAValue).x;
+		const int textHeightForObserverCountAxis = dc.GetTextExtent(exampleMaxHeightObserverCount).y;
+		const int textHeightForDiagramTitle = dc.GetTextExtent(myTitle).y;
+
+		const int borderWidthLeft   = borderWidthLeftBasis + textWidthForOPAAxis;
 		const int borderWidthRight  = borderWidthBasis;
 		const int borderWidthTop    = borderWidthBasis;
-		const int borderWidthBottom = borderWidthBasis + dc.GetTextExtent("0").y + dc.GetTextExtent(myTitle).y + 8;
+		const int borderWidthBottom = borderWidthBasis + textHeightForObserverCountAxis + textHeightForDiagramTitle + 8;
 
 		const wxPoint topLeft = { borderWidthLeft, borderWidthTop };
 		const wxPoint bottomRight = { GetSize().x - borderWidthRight, GetSize().y - borderWidthBottom };
