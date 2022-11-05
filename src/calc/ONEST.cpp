@@ -273,7 +273,6 @@ namespace onest::calc
 		return { min, max };
 	}
 
-	// TODO: epsilon parameter
 	ObserversNeeded calculateObserversNeeded(const ONEST& onest)
 	{
 		if (onest.empty())
