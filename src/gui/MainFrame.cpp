@@ -20,6 +20,8 @@
 #include <wx/msgdlg.h>
 #include <wx/toolbar.h>
 
+#include "rsc/calculation_toggle_100.h"
+#include "rsc/calculation_toggle_all.h"
 #include "rsc/dice.h"
 #include "rsc/header_toggle.h"
 
@@ -39,6 +41,7 @@ namespace onest::gui
 	enum
 	{
 		TOOLBAR_DICE_BUTTON = wxID_HIGHEST + 1,
+		TOOLBAR_CALCULATION_TOGGLE_BUTTON,
 		TOOLBAR_HEADER_BUTTON
 	};
 
@@ -69,6 +72,9 @@ namespace onest::gui
 
 	void MainFrame::createToolbar()
 	{
+		static const wxBitmap toggleIcon100 = wxBitmap::NewFromPNGData(rsc::calculation_toggle_100, sizeof(rsc::calculation_toggle_100));
+		static const wxBitmap toggleIconAll = wxBitmap::NewFromPNGData(rsc::calculation_toggle_all, sizeof(rsc::calculation_toggle_all));
+
 		wxToolBar* toolbar = CreateToolBar();
 
 		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN), "Open CSV input...");
@@ -84,7 +90,32 @@ namespace onest::gui
 			"Use non-deterministic random numbers for permutation selection"
 		);
 		diceButton->SetToggle(true);
-		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { recalculateValues(); }, TOOLBAR_DICE_BUTTON);
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&)
+		{
+			if (!myCalculateAllPossiblePermutations)
+				recalculateValues();
+		}, TOOLBAR_DICE_BUTTON);
+
+		auto calculationToggleButton = toolbar->AddTool(
+			TOOLBAR_CALCULATION_TOGGLE_BUTTON,
+			"Toggle calculation mode",
+			toggleIcon100,
+			"Use all possible permutations for ONEST calculation or only a random 100?"
+		);
+		toolbar->Bind(wxEVT_MENU, [this, toolbar](wxEvent&)
+		{
+			if (myCalculateAllPossiblePermutations)
+			{
+				myCalculateAllPossiblePermutations = false;
+				toolbar->SetToolNormalBitmap(TOOLBAR_CALCULATION_TOGGLE_BUTTON, toggleIcon100);
+			}
+			else
+			{
+				myCalculateAllPossiblePermutations = true;
+				toolbar->SetToolNormalBitmap(TOOLBAR_CALCULATION_TOGGLE_BUTTON, toggleIconAll);
+			}
+			recalculateValues();
+		}, TOOLBAR_CALCULATION_TOGGLE_BUTTON);
 
 		auto headerButton = toolbar->AddTool(
 			TOOLBAR_HEADER_BUTTON,
@@ -279,23 +310,34 @@ namespace onest::gui
 			const AssessmentMatrix matrix = createAssessmentMatrixAndUpdateCellColors(categoryFactory);
 			pMyCategoryGrid->refreshCategoryDistributionTable(matrix, categoryFactory);
 
-			myCalculationThread = calculateRandomPermutations(
-				matrix,
-				100,
-				randomizeSeedButton->IsToggled() ? RNG(random_device()()) : RNG(),
-				[this](ONEST onest)
-				{
-					wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_SUCCESS);
-					event->SetPayload(onest);
-					QueueEvent(event);
-				},
-				[this](exception_ptr exception)
-				{
-					wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_FAILURE);
-					event->SetPayload(exception);
-					QueueEvent(event);
-				}
-			);
+			auto onSuccess = [this](ONEST onest)
+			{
+				wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_SUCCESS);
+				event->SetPayload(onest);
+				QueueEvent(event);
+			};
+
+			auto onError = [this](exception_ptr exception)
+			{
+				wxThreadEvent* event = new wxThreadEvent(EVENT_CALCULATION_FAILURE);
+				event->SetPayload(exception);
+				QueueEvent(event);
+			};
+
+			if (myCalculateAllPossiblePermutations)
+			{
+				myCalculationThread = calculateAllPermutations(matrix, onSuccess, onError);
+			}
+			else
+			{
+				myCalculationThread = calculateRandomPermutations(
+					matrix,
+					100,
+					randomizeSeedButton->IsToggled() ? RNG(random_device()()) : RNG(),
+					onSuccess,
+					onError
+				);
+			}
 		}
 		catch (const exception& ex)
 		{

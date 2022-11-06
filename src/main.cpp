@@ -15,6 +15,8 @@ namespace
 	public:
 		bool OnInit() override
 		{
+			wxInitAllImageHandlers();
+
 			MainFrame* frame = new MainFrame();
 			frame->Show(true);
 			return true;

@@ -42,6 +42,7 @@ namespace onest::gui
 		calc::AssessmentMatrix createAssessmentMatrixAndUpdateCellColors(calc::CategoryFactory& categoryFactory);
 
 		calc::ONEST myONEST;
+		bool myCalculateAllPossiblePermutations = false;
 
 		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
 		wxBoxSizer* pMyLeftVerticalLayout = nullptr;

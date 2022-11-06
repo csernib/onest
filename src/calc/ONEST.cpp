@@ -126,8 +126,12 @@ namespace
 		set<ObserverPermutation> allPermutations;
 
 		ObserverPermutation permutation = generateFirstPermutation(matrix.getTotalNumberOfObservers());
+		int iterationCountBeforeInterruptCheck = 0;
 		do
 		{
+			if (++iterationCountBeforeInterruptCheck % 1000 == 0 && stoken.stop_requested())
+				throw ThreadInterrupted();
+
 			allPermutations.insert(permutation);
 		}
 		while (next_permutation(permutation.begin(), permutation.end()));
