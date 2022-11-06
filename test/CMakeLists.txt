@@ -14,6 +14,7 @@ set(
 	Test_Exporter.cpp
 	Test_File.cpp
 	Test_ONEST.cpp
+	Test_ONEST_Integration.cpp
 	Test_Parser.cpp
 	Test_RuleCategorizer.cpp
 	Test_RuleIntervalRule.cpp
@@ -39,6 +40,7 @@ set(
 
 set(
 	HEADERS
+	Test_ONEST_Helper.h
 	test.h
 )
 

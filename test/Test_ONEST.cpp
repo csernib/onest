@@ -1,10 +1,8 @@
 #include "../src/calc/CategoryFactory.h"
 #include "../src/calc/ONEST.h"
 #include "../src/Exception.h"
+#include "Test_ONEST_Helper.h"
 #include "test.h"
-
-#include <algorithm>
-#include <future>
 
 
 #define TAG "[ONEST] "
@@ -13,6 +11,8 @@ using namespace std;
 using namespace onest::calc;
 
 using onest::Exception;
+using test::calculateAllPermutations;
+using test::calculateRandomPermutations;
 
 namespace
 {
@@ -66,29 +66,6 @@ namespace
 		}();
 
 		return opacs;
-	}
-
-	template<class AsyncFunction, class... Args>
-	ONEST synchronize(AsyncFunction asyncFunction, Args&&... args)
-	{
-		promise<ONEST> promise;
-		jthread thread = asyncFunction(
-			forward<Args>(args)...,
-			[&](ONEST onest) { promise.set_value(move(onest)); },
-			[&](exception_ptr e) { promise.set_exception(e); }
-		);
-		thread.join();
-		return promise.get_future().get();
-	}
-
-	ONEST calculateAllPermutations(const AssessmentMatrix& matrix)
-	{
-		return synchronize(onest::calc::calculateAllPermutations, matrix);
-	}
-
-	ONEST calculateRandomPermutations(const AssessmentMatrix& matrix, unsigned numberOfPermutations, RNG rng)
-	{
-		return synchronize(onest::calc::calculateRandomPermutations, matrix, numberOfPermutations, rng);
 	}
 }
 

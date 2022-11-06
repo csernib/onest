@@ -14,8 +14,11 @@ lest::tests& test_specification();
 #define SETUP lest_SETUP("")
 #define SECTION lest_SECTION("")
 
+#include <filesystem>
+#include <source_location>
+
 
 namespace test
 {
-	// Write common code shared by all tests here.
+	const std::filesystem::path testResourcesFolder = std::filesystem::path(std::source_location::current().file_name()).parent_path() / "rsc";
 }
