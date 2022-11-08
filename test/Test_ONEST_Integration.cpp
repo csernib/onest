@@ -6,6 +6,9 @@
 #include "Test_ONEST_Helper.h"
 #include "test.h"
 
+#include <algorithm>
+#include <ranges>
+
 
 #define TAG "[ONEST] [Integration] "
 
@@ -34,6 +37,14 @@ CASE(TAG "Given an input CSV file, calculating ONEST with all permutations yield
 	const string expectedCSVText = File::readFileAsString(expectedResultFilePath);
 	const Sheet expectedSheet = parseSheet(expectedCSVText, ',', '"');
 
+	ONEST expectedONEST;
+	auto stringToDouble = views::transform([](const string& s) { return stod(s); });
+	for (const Row& row : expectedSheet)
+	{
+		auto convertedRow = row | stringToDouble;
+		expectedONEST.emplace_back(convertedRow.begin(), convertedRow.end());
+	}
+
 	const Categorizer categorizer("0<=X<=0.3;0.3<=X<=0.5;0.5<X");
 
 	EXPECT(inputSheet.size() == 50);
@@ -57,17 +68,13 @@ CASE(TAG "Given an input CSV file, calculating ONEST with all permutations yield
 	}
 
 	// When
-	const ONEST onest = calculateAllPermutations(matrix);
+	ONEST onest = calculateAllPermutations(matrix);
 
 	// Then
 	EXPECT(onest.size() == expectedSheet.size());
-	for (size_t i = 0; i < onest.size(); ++i)
-	{
-		EXPECT(onest[i].size() == expectedSheet[i].size());
-		for (size_t j = 0; j < onest[i].size(); ++j)
-		{
-			const double expectedOPA = stod(expectedSheet[i][j]);
-			EXPECT(onest[i][j] == expectedOPA);
-		}
-	}
+
+	ranges::sort(onest);
+	ranges::sort(expectedONEST);
+
+	EXPECT(onest == expectedONEST);
 }

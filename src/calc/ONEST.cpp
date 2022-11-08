@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <optional>
 #include <ranges>
 #include <set>
 
@@ -65,11 +66,12 @@ namespace
 
 	}
 
-	ONEST calculateONEST(const stop_token& stoken, const AssessmentMatrix& matrix, set<ObserverPermutation> observerPermutations)
+	template<class Permutator>
+	ONEST calculateONEST(const stop_token& stoken, const AssessmentMatrix& matrix, Permutator&& permutator)
 	{
 		ONEST onest;
-		for (const ObserverPermutation& permutation : observerPermutations)
-			onest.emplace_back(calculateOPAC(stoken, matrix, permutation));
+		while (optional<ObserverPermutation> permutation = permutator())
+			onest.emplace_back(calculateOPAC(stoken, matrix, *permutation));
 
 		return onest;
 	}
@@ -123,20 +125,15 @@ namespace
 		if (matrix.getTotalNumberOfObservers() == 1)
 			return ONEST{ { number_t(1.0) } };
 
-		set<ObserverPermutation> allPermutations;
-
 		ObserverPermutation permutation = generateFirstPermutation(matrix.getTotalNumberOfObservers());
-		int iterationCountBeforeInterruptCheck = 0;
-		do
+		return calculateONEST(stoken, matrix, [&, hasNext = true]() mutable -> optional<ObserverPermutation>
 		{
-			if (++iterationCountBeforeInterruptCheck % 1000 == 0 && stoken.stop_requested())
-				throw ThreadInterrupted();
+			if (!hasNext)
+				return {};
 
-			allPermutations.insert(permutation);
-		}
-		while (next_permutation(permutation.begin(), permutation.end()));
-
-		return calculateONEST(stoken, matrix, move(allPermutations));
+			hasNext = next_permutation(permutation.begin(), permutation.end());
+			return permutation;
+		});
 	}
 
 	ONEST calculateRandomPermutationsInThread(const stop_token& stoken, const AssessmentMatrix& matrix, unsigned numberOfPermutations, RNG rng)
@@ -148,20 +145,23 @@ namespace
 			return calculateAllPermutationsInThread(stoken, matrix);
 
 		set<ObserverPermutation> randomPermutations;
-
 		ObserverPermutation permutation = generateFirstPermutation(matrix.getTotalNumberOfObservers());
-		for (unsigned i = 0; i < numberOfPermutations; ++i)
+		return calculateONEST(stoken, matrix, [&, i = 0u]() mutable -> optional<ObserverPermutation>
 		{
-			do
+			if (i++ < numberOfPermutations)
 			{
-				shuffle(permutation.begin(), permutation.end(), rng);
+				do
+				{
+					shuffle(permutation.begin(), permutation.end(), rng);
+				}
+				while (randomPermutations.find(permutation) != randomPermutations.end());
+
+				randomPermutations.emplace(permutation);
+				return permutation;
 			}
-			while (randomPermutations.find(permutation) != randomPermutations.end());
 
-			randomPermutations.emplace(permutation);
-		}
-
-		return calculateONEST(stoken, matrix, move(randomPermutations));
+			return {};
+		});
 	}
 }
 
