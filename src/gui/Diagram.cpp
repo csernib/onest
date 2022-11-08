@@ -7,6 +7,7 @@
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <format>
@@ -56,6 +57,8 @@ namespace onest::gui
 	void Diagram::plotONEST(calc::ONEST onest)
 	{
 		myONEST = move(onest);
+		std::ranges::sort(myONEST);
+		myONEST.erase(std::unique(myONEST.begin(), myONEST.end()), myONEST.end());
 		Refresh();
 	}
 
