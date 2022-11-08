@@ -70,6 +70,14 @@ namespace onest::gui
 		recalculateValues();
 	}
 
+	void MainFrame::DoGiveHelp(const wxString& help, bool show)
+	{
+		// This override is empty on purpose. Normally this would update the status bar text with help text
+		// when toolbar items are hovered, but that feature is not used by this program.
+		// On Windows it was also causing a flaky bug, where the status text during ONEST calculation would
+		// sometimes incorrectly get replaced by "Ready".
+	}
+
 	void MainFrame::createToolbar()
 	{
 		static const wxBitmap toggleIcon100 = wxBitmap::NewFromPNGData(rsc::calculation_toggle_100, sizeof(rsc::calculation_toggle_100));

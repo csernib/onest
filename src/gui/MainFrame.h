@@ -27,6 +27,8 @@ namespace onest::gui
 		MainFrame();
 
 	private:
+		void DoGiveHelp(const wxString& help, bool show) override;
+
 		void createToolbar();
 		void createMainLayoutSizers();
 		void createTable(const csv::Sheet& sheet);
