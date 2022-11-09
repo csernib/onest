@@ -80,9 +80,6 @@ namespace onest::gui
 
 	void MainFrame::createToolbar()
 	{
-		static const wxBitmap toggleIcon100 = wxBitmap::NewFromPNGData(rsc::calculation_toggle_100, sizeof(rsc::calculation_toggle_100));
-		static const wxBitmap toggleIconAll = wxBitmap::NewFromPNGData(rsc::calculation_toggle_all, sizeof(rsc::calculation_toggle_all));
-
 		wxToolBar* toolbar = CreateToolBar();
 
 		toolbar->AddTool(wxID_OPEN, "Open", wxArtProvider::GetBitmap(wxART_FILE_OPEN), "Open CSV input...");
@@ -107,23 +104,17 @@ namespace onest::gui
 		auto calculationToggleButton = toolbar->AddTool(
 			TOOLBAR_CALCULATION_TOGGLE_BUTTON,
 			"Toggle calculation mode",
-			toggleIcon100,
+			wxNullBitmap,
 			"Use all possible permutations for ONEST calculation or only a random 100?"
 		);
 		toolbar->Bind(wxEVT_MENU, [this, toolbar](wxEvent&)
 		{
-			if (myCalculateAllPossiblePermutations)
-			{
-				myCalculateAllPossiblePermutations = false;
-				toolbar->SetToolNormalBitmap(TOOLBAR_CALCULATION_TOGGLE_BUTTON, toggleIcon100);
-			}
-			else
-			{
-				myCalculateAllPossiblePermutations = true;
-				toolbar->SetToolNormalBitmap(TOOLBAR_CALCULATION_TOGGLE_BUTTON, toggleIconAll);
-			}
+			if (!myCalculateAllPossiblePermutations && !haveUserAcceptWarningForAllPermutationsIfNeeded())
+				return;
+			setCalculationModeAndToolBarState(!myCalculateAllPossiblePermutations);
 			recalculateValues();
 		}, TOOLBAR_CALCULATION_TOGGLE_BUTTON);
+		setCalculationModeAndToolBarState(myCalculateAllPossiblePermutations);
 
 		auto headerButton = toolbar->AddTool(
 			TOOLBAR_HEADER_BUTTON,
@@ -187,6 +178,13 @@ namespace onest::gui
 		pMyTable->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, [this](const wxGridEvent& event)
 		{
 			pMyTable->changeColumnEnableStatus(event.GetCol());
+
+			if (myCalculateAllPossiblePermutations && !haveUserAcceptWarningForAllPermutationsIfNeeded())
+			{
+				pMyTable->changeColumnEnableStatus(event.GetCol());
+				return;
+			}
+
 			recalculateValues();
 		});
 
@@ -262,6 +260,17 @@ namespace onest::gui
 			myONEST.clear();
 			myONEST.shrink_to_fit();
 
+			if (myCalculateAllPossiblePermutations && !haveUserAcceptWarningForAllPermutationsIfNeeded())
+			{
+				setCalculationModeAndToolBarState(false);
+				wxMessageBox(
+					"Calculation mode has been reverted to use only 100 random permutations.",
+					"Information",
+					wxOK | wxICON_INFORMATION,
+					this
+				);
+			}
+
 			recalculateValues();
 			Refresh();
 			SendSizeEvent();
@@ -302,6 +311,40 @@ namespace onest::gui
 			);
 		}
 		fileSaveDialog->Destroy();
+	}
+
+	void MainFrame::setCalculationModeAndToolBarState(bool calculateAll)
+	{
+		static const wxBitmap toggleIcon100 = wxBitmap::NewFromPNGData(rsc::calculation_toggle_100, sizeof(rsc::calculation_toggle_100));
+		static const wxBitmap toggleIconAll = wxBitmap::NewFromPNGData(rsc::calculation_toggle_all, sizeof(rsc::calculation_toggle_all));
+
+		myCalculateAllPossiblePermutations = calculateAll;
+		GetToolBar()->SetToolNormalBitmap(TOOLBAR_CALCULATION_TOGGLE_BUTTON, calculateAll ? toggleIconAll : toggleIcon100);
+	}
+
+	bool MainFrame::haveUserAcceptWarningForAllPermutationsIfNeeded()
+	{
+		if (myUserAlreadyWarnedForAllPermutations)
+			return true;
+
+		const unsigned numberOfObservers = pMyTable->getNumberOfEnabledColumns();
+		if (numberOfObservers >= 10)
+		{
+			static const char* message =
+				"Calculating all possible permutations may take a very long time with this many observers...\n\n"
+				"The application and your system may become unresponsive, and your operating system "
+				"may even shut down other applications due to memory exhaustion.\n\n"
+				"Are you sure you want to continue?";
+			const int userDecision = wxMessageBox(message, "Warning", wxYES | wxNO | wxICON_WARNING, this);
+			if (userDecision == wxYES)
+			{
+				myUserAlreadyWarnedForAllPermutations = true;
+				return true;
+			}
+			else
+				return false;
+		}
+		return true;
 	}
 
 	void MainFrame::recalculateValues()

@@ -37,6 +37,9 @@ namespace onest::gui
 		void showLoadFileDialog();
 		void showSaveFileDialog();
 
+		void setCalculationModeAndToolBarState(bool calculateAll);
+		bool haveUserAcceptWarningForAllPermutationsIfNeeded();
+
 		void recalculateValues();
 		void handleCalculationSuccess(const wxThreadEvent& event);
 		void handleCalculationFailure(const wxThreadEvent& event);
@@ -45,6 +48,7 @@ namespace onest::gui
 
 		calc::ONEST myONEST;
 		bool myCalculateAllPossiblePermutations = false;
+		bool myUserAlreadyWarnedForAllPermutations = false;
 
 		wxBoxSizer* pMyMainHorizontalLayout = nullptr;
 		wxBoxSizer* pMyLeftVerticalLayout = nullptr;
