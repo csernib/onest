@@ -226,7 +226,7 @@ CASE(TAG "If there are two observers and they are in complete agreement, then th
 	EXPECT(observersNeeded.opaValue == 1.0);
 }
 
-CASE(TAG "If there are two observers, but they are not in complete agreeent, then the number of observers needed cannot be reliably calculated.")
+CASE(TAG "If there are two observers, but they are not in complete agreement, then the number of observers needed cannot be reliably calculated.")
 {
 	// Given
 	const ONEST onest = { { 0.99 } };

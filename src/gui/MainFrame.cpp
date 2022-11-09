@@ -88,26 +88,38 @@ namespace onest::gui
 		toolbar->AddTool(wxID_SAVE, "Save", wxArtProvider::GetBitmap(wxART_FILE_SAVE), "Export ONEST output...");
 		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showSaveFileDialog(); }, wxID_SAVE);
 
-		auto diceButton = toolbar->AddTool(
+		createRandomizationToggleButton();
+		createCalculationModeToggleButton();
+		createHeaderToggleButton();
+
+		toolbar->Realize();
+	}
+
+	void MainFrame::createRandomizationToggleButton()
+	{
+		auto randomizationToggleButton = GetToolBar()->AddTool(
 			TOOLBAR_DICE_BUTTON,
 			"Randomize",
 			wxBitmap::NewFromPNGData(rsc::dice, sizeof(rsc::dice)),
 			"Use non-deterministic random numbers for permutation selection"
 		);
-		diceButton->SetToggle(true);
-		toolbar->Bind(wxEVT_MENU, [this](wxEvent&)
+		randomizationToggleButton->SetToggle(true);
+		GetToolBar()->Bind(wxEVT_MENU, [this](wxEvent&)
 		{
 			if (!myCalculateAllPossiblePermutations)
 				recalculateValues();
 		}, TOOLBAR_DICE_BUTTON);
+	}
 
-		auto calculationToggleButton = toolbar->AddTool(
+	void MainFrame::createCalculationModeToggleButton()
+	{
+		GetToolBar()->AddTool(
 			TOOLBAR_CALCULATION_TOGGLE_BUTTON,
 			"Toggle calculation mode",
 			wxNullBitmap,
 			"Use all possible permutations for ONEST calculation or only a random 100?"
 		);
-		toolbar->Bind(wxEVT_MENU, [this, toolbar](wxEvent&)
+		GetToolBar()->Bind(wxEVT_MENU, [this](wxEvent&)
 		{
 			if (!myCalculateAllPossiblePermutations && !haveUserAcceptWarningForAllPermutationsIfNeeded())
 				return;
@@ -115,21 +127,22 @@ namespace onest::gui
 			recalculateValues();
 		}, TOOLBAR_CALCULATION_TOGGLE_BUTTON);
 		setCalculationModeAndToolBarState(myCalculateAllPossiblePermutations);
+	}
 
-		auto headerButton = toolbar->AddTool(
+	void MainFrame::createHeaderToggleButton()
+	{
+		auto headerButton = GetToolBar()->AddTool(
 			TOOLBAR_HEADER_BUTTON,
 			"Toggle header",
 			wxBitmap::NewFromPNGData(rsc::header_toggle, sizeof(rsc::header_toggle)),
 			"Is the first row a header?"
 		);
 		headerButton->SetToggle(true);
-		toolbar->Bind(
+		GetToolBar()->Bind(
 			wxEVT_MENU,
 			[this, headerButton](wxEvent&) { pMyTable->setFirstRowAsHeader(headerButton->IsToggled()); recalculateValues(); },
 			TOOLBAR_HEADER_BUTTON
 		);
-
-		toolbar->Realize();
 	}
 
 	void MainFrame::createMainLayoutSizers()
@@ -282,7 +295,7 @@ namespace onest::gui
 	{
 		if (myONEST.empty())
 		{
-			wxMessageBox("Nothing is calculated yet, so there is nothing to save.", "Information", wxICON_INFORMATION | wxOK);
+			wxMessageBox("Nothing is calculated, so there is nothing to save.", "Information", wxICON_INFORMATION | wxOK);
 			return;
 		}
 
@@ -459,8 +472,8 @@ namespace onest::gui
 					continue;
 
 				const string cellValue = pMyTable->GetCellValue(i, j).ToStdString();
-				Categorizer::Result categorization = categorizer.categorize(cellValue);
-				string categoryValue = categorization.success ? string(categorization.category) : cellValue;
+				const Categorizer::Result categorization = categorizer.categorize(cellValue);
+				const string categoryValue = categorization.success ? string(categorization.category) : cellValue;
 				matrix.set(observerIndex, i, categoryFactory.createCategory(categoryValue));
 				++observerIndex;
 

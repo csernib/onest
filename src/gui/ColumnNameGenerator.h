@@ -7,6 +7,9 @@ namespace onest::gui
 {
 	class ColumnNameGenerator final
 	{
+	private:
+		ColumnNameGenerator() = delete;
+
 	public:
 		static std::string generateNameForColumn(int column)
 		{

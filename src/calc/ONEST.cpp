@@ -50,7 +50,7 @@ namespace
 			;
 		}
 
-		return static_cast<double>(totalEqual) / static_cast<double>(matrix.getTotalNumberOfCases());
+		return static_cast<number_t>(totalEqual) / static_cast<number_t>(matrix.getTotalNumberOfCases());
 	}
 
 	OPAC calculateOPAC(const stop_token& stoken, const AssessmentMatrix& matrix, const ObserverPermutation& permutation)
@@ -210,7 +210,7 @@ namespace onest::calc
 			rng = move(rng),
 			onSuccess = move(onSuccess),
 			onError = move(onError)
-		](stop_token stoken)
+		](stop_token stoken) mutable
 		{
 			ONEST result;
 			try

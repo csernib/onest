@@ -15,5 +15,5 @@ namespace onest::rule::parser
 
 	std::vector<std::string_view> splitByUnescapedChar(std::string_view string, char c);
 
-	std::vector<std::shared_ptr<Rule>> stringsToRules(std::vector<std::string_view> ruleStrings, RuleFunction ruleFunction);
+	std::vector<std::shared_ptr<Rule>> stringsToRules(const std::vector<std::string_view>& ruleStrings, RuleFunction ruleFunction);
 }

@@ -43,7 +43,7 @@ namespace onest::rule::parser
 		return splits;
 	}
 
-	vector<shared_ptr<Rule>> stringsToRules(vector<string_view> ruleStrings, RuleFunction ruleFunction)
+	vector<shared_ptr<Rule>> stringsToRules(const vector<string_view>& ruleStrings, RuleFunction ruleFunction)
 	{
 		vector<shared_ptr<Rule>> rules;
 		rules.reserve(ruleStrings.size());

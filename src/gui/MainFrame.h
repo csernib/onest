@@ -30,6 +30,9 @@ namespace onest::gui
 		void DoGiveHelp(const wxString& help, bool show) override;
 
 		void createToolbar();
+		void createRandomizationToggleButton();
+		void createCalculationModeToggleButton();
+		void createHeaderToggleButton();
 		void createMainLayoutSizers();
 		void createTable(const csv::Sheet& sheet);
 		void createLayoutOnTheLeft();
