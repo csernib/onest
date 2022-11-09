@@ -84,12 +84,14 @@ CASE(TAG "Interval rules with both threshold disabled return true if the number 
 CASE(TAG "Interval rules do not match non-numeric strings.")
 {
 	// Given
-	IntervalRule rule("", { .value = -100.0, .enabled = true }, { .value = 100.0, .enabled = true });
+	IntervalRule rule("", {}, {});
 
 	// When, then
 	EXPECT_NOT(rule.apply(""));
 	EXPECT_NOT(rule.apply("abc"));
 	EXPECT_NOT(rule.apply("0x0A"));
 	EXPECT_NOT(rule.apply("NaN"));
+	EXPECT_NOT(rule.apply("inf"));
+	EXPECT_NOT(rule.apply("-inf"));
 	EXPECT_NOT(rule.apply("1.4e9"));
 }

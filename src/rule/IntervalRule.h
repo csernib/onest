@@ -3,6 +3,7 @@
 #include "Rule.h"
 
 #include <charconv>
+#include <cmath>
 
 
 using namespace std;
@@ -31,6 +32,9 @@ namespace onest::rule
 			double convertedValue;
 			auto r = from_chars(value.data(), value.data() + value.size(), convertedValue, chars_format::fixed);
 			if (r.ptr != value.data() + value.size() || r.ec != errc())
+				return false;
+
+			if (isnan(convertedValue) || isinf(convertedValue))
 				return false;
 
 			bool result = true;
