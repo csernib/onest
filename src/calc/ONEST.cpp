@@ -78,18 +78,15 @@ namespace
 
 	constexpr unsigned factorial(unsigned n)
 	{
-		if (n <= 1)
-			return 1;
-
-		if (n == numeric_limits<unsigned>::max())
-			return numeric_limits<unsigned>::max();
-
-		const unsigned previousFactorial = factorial(n - 1);
-		const unsigned currentFactorial = n * previousFactorial;
-		if (currentFactorial / n != previousFactorial)
-			return numeric_limits<unsigned>::max();
-
-		return currentFactorial;
+		unsigned result = 1;
+		for (unsigned i = 2; i <= n; ++i)
+		{
+			const unsigned previousResult = result;
+			result *= i;
+			if (result / i != previousResult)
+				return numeric_limits<unsigned>::max();
+		}
+		return result;
 	}
 
 	auto mapToOPAsAtObserverCountIndex(const ONEST& onest, size_t observerCountIndex)
@@ -167,6 +164,11 @@ namespace
 
 namespace onest::test
 {
+	unsigned factorial(unsigned n)
+	{
+		return ::factorial(n);
+	}
+
 	number_t median(const vector<number_t>& input)
 	{
 		return ::median(input);

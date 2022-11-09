@@ -4,6 +4,8 @@
 #include "Test_ONEST_Helper.h"
 #include "test.h"
 
+#include <limits>
+
 
 #define TAG "[ONEST] "
 
@@ -71,9 +73,11 @@ namespace
 
 namespace onest::test
 {
+	unsigned factorial(unsigned n);
 	number_t median(const vector<number_t>& input);
 }
 
+using onest::test::factorial;
 using onest::test::median;
 
 CASE(TAG "ONEST for all permutations yields the correct OPACs.")
@@ -116,6 +120,23 @@ CASE(TAG "ONEST for 0 random permutations returns empty container.")
 
 	// Then
 	EXPECT(onest.empty());
+}
+
+CASE(TAG "Factorial calculation works correctly for small numbers.")
+{
+	EXPECT(factorial(0) == 1);
+	EXPECT(factorial(1) == 1);
+	EXPECT(factorial(2) == 2);
+	EXPECT(factorial(3) == 6);
+	EXPECT(factorial(4) == 24);
+	EXPECT(factorial(5) == 120);
+}
+
+CASE(TAG "Factorial of a large number (that would cause the result type to overflow) is the maximum value possible.")
+{
+	EXPECT(factorial(-1) == numeric_limits<decltype(factorial(0))>::max());
+	EXPECT(factorial(-2) == numeric_limits<decltype(factorial(0))>::max());
+	EXPECT(factorial(numeric_limits<decltype(factorial(0))>::max() / 3) == numeric_limits<decltype(factorial(0))>::max());
 }
 
 CASE(TAG "Median calculation works correctly.")
