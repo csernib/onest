@@ -77,7 +77,10 @@ add_executable(
 	${WIN32_RESOURCES}
 )
 
-target_compile_definitions(onest PRIVATE CMAKE_ONEST_APPLICATION_NAME="ONEST Calculator")
+set(CMAKE_ONEST_APPLICATION_NAME "ONEST Calculator")
+set_target_properties(onest PROPERTIES OUTPUT_NAME ${CMAKE_ONEST_APPLICATION_NAME})
+
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_APPLICATION_NAME="${CMAKE_ONEST_APPLICATION_NAME}")
 target_compile_definitions(onest PRIVATE CMAKE_ONEST_CONTACT_EMAIL="public.balint.cserni@gmail.com")
 target_compile_definitions(onest PRIVATE CMAKE_ONEST_PROJECT_PAGE="https://github.com/csernib/onest/")
 
