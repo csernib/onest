@@ -51,6 +51,8 @@ namespace onest::gui
 
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, CMAKE_ONEST_APPLICATION_NAME " " CMAKE_ONEST_APPLICATION_VERSION)
 	{
+		Maximize();
+
 		Bind(EVENT_CALCULATION_SUCCESS, &MainFrame::handleCalculationSuccess, this);
 		Bind(EVENT_CALCULATION_FAILURE, &MainFrame::handleCalculationFailure, this);
 

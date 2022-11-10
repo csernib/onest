@@ -78,5 +78,7 @@ namespace onest::gui
 		// The height does not matter, as the HTML window will fill it out anyway because of the second call.
 		SetClientSize(displaySize.width / 5 * 2, 0);
 		SetClientSize(htmlWindow->GetVirtualSize());
+
+		CenterOnParent();
 	}
 }
