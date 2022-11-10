@@ -65,10 +65,16 @@ set(
 	src/git.h
 )
 
+set(
+	WIN32_RESOURCES
+	src/gui/rsc/icon.rc
+)
+
 add_executable(
 	onest WIN32
 	${SOURCES}
 	${HEADERS}
+	${WIN32_RESOURCES}
 )
 
 target_compile_definitions(onest PRIVATE CMAKE_ONEST_APPLICATION_NAME="ONEST Calculator")

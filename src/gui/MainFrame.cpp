@@ -51,6 +51,10 @@ namespace onest::gui
 
 	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, CMAKE_ONEST_APPLICATION_NAME " " CMAKE_ONEST_APPLICATION_VERSION)
 	{
+		#ifdef WIN32
+			SetIcon(wxICON(WIN32_ONEST_APPLICATION_ICON));
+		#endif
+
 		Maximize();
 
 		Bind(EVENT_CALCULATION_SUCCESS, &MainFrame::handleCalculationSuccess, this);
