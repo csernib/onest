@@ -39,6 +39,7 @@ namespace onest::gui
 
 		void showLoadFileDialog();
 		void showSaveFileDialog();
+		void showAboutDialog();
 
 		void setCalculationModeAndToolBarState(bool calculateAll);
 		bool haveUserAcceptWarningForAllPermutationsIfNeeded();

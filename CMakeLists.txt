@@ -13,6 +13,7 @@ set(
 	src/calc/ONEST.cpp
 	src/csv/Exporter.cpp
 	src/csv/Parser.cpp
+	src/gui/AboutDialog.cpp
 	src/gui/CategoryGrid.cpp
 	src/gui/Diagram.cpp
 	src/gui/MainFrame.cpp
@@ -37,8 +38,11 @@ set(
 	src/csv/Parser.h
 	src/csv/ParserException.h
 	src/csv/Sheet.h
+	src/gui/rsc/calculation_toggle_100.h
+	src/gui/rsc/calculation_toggle_all.h
 	src/gui/rsc/dice.h
 	src/gui/rsc/header_toggle.h
+	src/gui/AboutDialog.h
 	src/gui/CategoryGrid.h
 	src/gui/ColumnNameGenerator.h
 	src/gui/Diagram.h
@@ -67,6 +71,20 @@ add_executable(
 	${HEADERS}
 )
 
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_APPLICATION_NAME="ONEST Calculator")
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_CONTACT_EMAIL="public.balint.cserni@gmail.com")
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_PROJECT_PAGE="https://github.com/csernib/onest/")
+
+file(STRINGS VERSION CMAKE_ONEST_APPLICATION_VERSION ENCODING UTF-8)
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_APPLICATION_VERSION="${CMAKE_ONEST_APPLICATION_VERSION}")
+
+file(STRINGS LICENSE CMAKE_ONEST_LICENSE_TEXT ENCODING UTF-8)
+list(JOIN CMAKE_ONEST_LICENSE_TEXT [=[\n]=] CMAKE_ONEST_LICENSE_TEXT)
+list(PREPEND CMAKE_ONEST_LICENSE_TEXT [=[R"___(]=])
+list(APPEND CMAKE_ONEST_LICENSE_TEXT [=[)___"]=])
+list(JOIN CMAKE_ONEST_LICENSE_TEXT "" CMAKE_ONEST_LICENSE_TEXT)
+target_compile_definitions(onest PRIVATE CMAKE_ONEST_LICENSE_TEXT=${CMAKE_ONEST_LICENSE_TEXT})
+
 add_subdirectory(test)
 
 
@@ -74,7 +92,7 @@ set(wxUSE_STL ON)
 set(wxBUILD_SHARED OFF)
 add_subdirectory(ext/wx-widgets)
 target_include_directories(onest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ext/wx-widgets/include)
-target_link_libraries(onest wx::core)
+target_link_libraries(onest wx::core wx::html)
 
 add_subdirectory(ext/git)
 target_link_libraries(onest cmake_git_version_tracking)

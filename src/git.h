@@ -5,5 +5,5 @@
 
 namespace onest::git
 {
-	std::string getVersionInfo();
+	std::string getCommitInfo();
 }

@@ -1,4 +1,5 @@
 #include "MainFrame.h"
+#include "AboutDialog.h"
 #include "CategoryGrid.h"
 #include "Diagram.h"
 #include "ResultGrid.h"
@@ -10,11 +11,11 @@
 #include "../csv/ParserException.h"
 #include "../io/File.h"
 #include "../rule/Categorizer.h"
-#include "../git.h"
 
 #include <ranges>
 #include <string>
 
+#include <wx/aboutdlg.h>
 #include <wx/artprov.h>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
@@ -48,10 +49,8 @@ namespace onest::gui
 	wxDEFINE_EVENT(EVENT_CALCULATION_SUCCESS, wxThreadEvent);
 	wxDEFINE_EVENT(EVENT_CALCULATION_FAILURE, wxThreadEvent);
 
-	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "ONEST")
+	MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, CMAKE_ONEST_APPLICATION_NAME " " CMAKE_ONEST_APPLICATION_VERSION)
 	{
-		SetTitle("ONEST Pre-alpha    |  " + git::getVersionInfo());
-
 		Bind(EVENT_CALCULATION_SUCCESS, &MainFrame::handleCalculationSuccess, this);
 		Bind(EVENT_CALCULATION_FAILURE, &MainFrame::handleCalculationFailure, this);
 
@@ -91,6 +90,10 @@ namespace onest::gui
 		createRandomizationToggleButton();
 		createCalculationModeToggleButton();
 		createHeaderToggleButton();
+
+		toolbar->AddStretchableSpace();
+		toolbar->AddTool(wxID_ABOUT, "About", wxArtProvider::GetBitmap(wxART_INFORMATION, "wxART_OTHER_C", wxSize(16, 16)), "About this program...");
+		toolbar->Bind(wxEVT_MENU, [this](wxEvent&) { showAboutDialog(); }, wxID_ABOUT);
 
 		toolbar->Realize();
 	}
@@ -324,6 +327,12 @@ namespace onest::gui
 			);
 		}
 		fileSaveDialog->Destroy();
+	}
+
+	void MainFrame::showAboutDialog()
+	{
+		AboutDialog aboutDialog(this);
+		aboutDialog.ShowModal();
 	}
 
 	void MainFrame::setCalculationModeAndToolBarState(bool calculateAll)

@@ -4,17 +4,13 @@
 
 using namespace std;
 
-string onest::git::getVersionInfo()
+string onest::git::getCommitInfo()
 {
 	if (!::git::IsPopulated())
-		return "(unknown version)";
+		return "(unknown)";
 
-	string abbrevHash = ::git::CommitSHA1().substr(0, 8);
-	string lastCommitMessage = ::git::CommitSubject();
-	if (lastCommitMessage.size() > 50)
-		lastCommitMessage = lastCommitMessage.substr(0, 47) + "...";
+	const string abbrevHash = ::git::CommitSHA1().substr(0, 8);
+	const string dirty = ::git::AnyUncommittedChanges() ? " (MODIFIED)" : "";
 
-	string dirty = ::git::AnyUncommittedChanges() ? " (MODIFIED)" : "";
-
-	return "Version: " + abbrevHash + " - " + lastCommitMessage + dirty;
+	return abbrevHash + dirty;
 }
