@@ -26,7 +26,7 @@ namespace onest::gui
 			assert(sheet[0].size() == sheet[i].size());
 			for (size_t j = 0; j < sheet[i].size(); ++j)
 			{
-				SetCellValue(i, j, sheet[i][j]);
+				SetCellValue(i, j, wxString::FromUTF8(sheet[i][j]));
 			}
 		}
 
