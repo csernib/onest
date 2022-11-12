@@ -16,7 +16,8 @@
     "Sejben I, V\u00f6r\u00f6s A, Zombori T, Ny\u00e1ri T, Cserni G.<br>"                                             \
     "The additional value of ONEST (Observers Needed to Evaluate Subjective Tests) in assessing "                     \
     "reproducibility of oestrogen receptor, progesterone receptor and Ki67 classification in breast cancer.<br>"      \
-    "Virchows Arch 2021;479(6):1101-1109. doi: 10.1007/s00428-021-03172-9</cite></p>"
+    "Virchows Arch 2021;479(6):1101-1109. <a href=\"https://doi.org/10.1007/s00428-021-03172-9\">"                    \
+    "doi: 10.1007/s00428-021-03172-9</a></cite></p>"
 
 #define ABOUT_DIALOG_HTML_TEXT                                                                                        \
     "<p><b>" CMAKE_ONEST_APPLICATION_NAME "</b></p>"                                                                  \
