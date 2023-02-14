@@ -2,9 +2,7 @@
 
 When using this program, please consider quoting the article below, for which it was developed:
 
-_Cserni B, Kilmartin D, O'Loughlin M, Andreu X, Bagó-Horváth Z, Bianchi S, Chmielik E, Figueiredo P, Floris G, Foschini MP, Kovács A, Heikkilä P, Kulka J, Laenkholm AV, Liepniece-Karele I, Marchiò C, Provenzano E, Regitnig P, Reiner A, Ryška A, Sapino A, Specht Stovgaard E, Quinn C, Zolota V, Webber M, Glynn SA, Bori R, Csörgő E, Oláh-Németh O, Pancsa T, Sejben A, Sejben I, Vörös A, Zombori T, Nyári T, Callagy G, Cserni G._  
-_ONEST (Observers Needed to Evaluate Subjective Tests) analysis of stromal tumour infiltrating lymphocytes (sTILs) in breast cancer and its limitations._  
-_Source to be specified later._
+_Cserni B, Kilmartin D, O’Loughlin M, Andreu X, Bagó-Horváth Z, Bianchi S, Chmielik E, Figueiredo P, Floris G, Foschini MP, Kovács A, Heikkilä P, Kulka J, Laenkholm A-V, Liepniece-Karele I, Marchiò C, Provenzano E, Regitnig P, Reiner A, Ryška A, Sapino A, Stovgaard ES, Quinn C, Zolota V, Webber M, Glynn SA, Bori R, Csörgő E, Oláh-Németh O, Pancsa T, Sejben A, Sejben I, Vörös A, Zombori T, Nyári T, Callagy G, Cserni G. ONEST (Observers Needed to Evaluate Subjective Tests) Analysis of Stromal Tumour-Infiltrating Lymphocytes (sTILs) in Breast Cancer and Its Limitations. Cancers. 2023; 15(4):1199. [https://doi.org/10.3390/cancers15041199](https://doi.org/10.3390/cancers15041199)_
 
 ## Intended use-case
 
@@ -168,9 +166,7 @@ This is likely caused by the above issue.
 
 When using this program, please consider quoting the article below, for which it was developed:
 
-_Cserni B, Kilmartin D, O'Loughlin M, Andreu X, Bagó-Horváth Z, Bianchi S, Chmielik E, Figueiredo P, Floris G, Foschini MP, Kovács A, Heikkilä P, Kulka J, Laenkholm AV, Liepniece-Karele I, Marchiò C, Provenzano E, Regitnig P, Reiner A, Ryška A, Sapino A, Specht Stovgaard E, Quinn C, Zolota V, Webber M, Glynn SA, Bori R, Csörgő E, Oláh-Németh O, Pancsa T, Sejben A, Sejben I, Vörös A, Zombori T, Nyári T, Callagy G, Cserni G._  
-_ONEST (Observers Needed to Evaluate Subjective Tests) analysis of stromal tumour infiltrating lymphocytes (sTILs) in breast cancer and its limitations._  
-_Source to be specified later._
+_Cserni B, Kilmartin D, O’Loughlin M, Andreu X, Bagó-Horváth Z, Bianchi S, Chmielik E, Figueiredo P, Floris G, Foschini MP, Kovács A, Heikkilä P, Kulka J, Laenkholm A-V, Liepniece-Karele I, Marchiò C, Provenzano E, Regitnig P, Reiner A, Ryška A, Sapino A, Stovgaard ES, Quinn C, Zolota V, Webber M, Glynn SA, Bori R, Csörgő E, Oláh-Németh O, Pancsa T, Sejben A, Sejben I, Vörös A, Zombori T, Nyári T, Callagy G, Cserni G. ONEST (Observers Needed to Evaluate Subjective Tests) Analysis of Stromal Tumour-Infiltrating Lymphocytes (sTILs) in Breast Cancer and Its Limitations. Cancers. 2023; 15(4):1199. [https://doi.org/10.3390/cancers15041199](https://doi.org/10.3390/cancers15041199)_
 
 ### License
 
